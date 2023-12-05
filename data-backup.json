@@ -1,0 +1,37 @@
+{
+    "running": true,
+    "daykills": [],
+    "locations": [
+        "B4",
+        "A101",
+        "C",
+        "D"
+    ],
+    "weapons": [
+        "pecivo",
+        "banana",
+        "skare"
+    ],
+    "players": [
+        {
+            "id": 464753609599352832,
+            "alive": true,
+            "reroll": true,
+            "mission": {
+                "target": 901130202221019227,
+                "location": "A101",
+                "weapon": "pecivo"
+            }
+        },
+        {
+            "id": 901130202221019227,
+            "alive": true,
+            "reroll": true,
+            "mission": {
+                "target": 464753609599352832,
+                "location": "A101",
+                "weapon": "skare"
+            }
+        }
+    ]
+}
