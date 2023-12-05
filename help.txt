@@ -1,5 +1,6 @@
-# Commands
+>>> # Commands
 ## Available for all
+### General
 hello - greets you
 h - prints the help message
 ping - prints server latency
@@ -8,7 +9,7 @@ getwpn - prints the list of set murder weapons
 register - registers you for the upcoming game
 unregister - unregisters you from the upcoming game
 ### In Game
-success - successfully kill your target and fulfill the mission, then receive a new one
+kill - successfully kill your target and fulfill the mission, then receive a new one
 reroll location|weapon|person|all - reroll one of the chosen mission components if rerolls are available
 ## Admin only
 ### Game Progression
@@ -16,9 +17,9 @@ start - starts the game with registered members as players
 end - ends the game
 nextday - announce all the killings during the last day and give rerolls if there were no deaths
 ### Systems
-kill @player - system kills the player in game
-revive @player - system revives the dead player in game
-introduce @player - turns a spectator into a player
-remove @player - turns a player into a spectator
+systemkill @player - system kills the player in game
+systemrevive @player - system revives the dead player in game
+systemintroduce @player - turns a spectator into a player
+systemremove @player - turns a player into a spectator
 setloc [location list] - sets the location list
 setwpn [weapon list] - sets the weapon list

@@ -19,12 +19,14 @@ async def prepare_commands(bot: commands.Bot):
     bot.add_command(unregister)
     bot.add_command(start)
     bot.add_command(end)
-    bot.add_command(revive)
+    bot.add_command(systemrevive)
+    bot.add_command(systemkill)
+    bot.add_command(systemintroduce)
+    bot.add_command(systemremove)
     bot.add_command(kill)
-    bot.add_command(introduce)
-    bot.add_command(remove)
-    bot.add_command(success)
     bot.add_command(reroll)
+    bot.add_command(nextday)
+    bot.add_command(final)
     await server.refresh()
 
 
@@ -59,12 +61,13 @@ async def reroll(ctx: commands.Context, what: str = ''):
 
 @commands.command()
 @role_required("alive")
-async def success(ctx: commands.Context):
+async def kill(ctx: commands.Context):
     allowed = await server.mission_accomplished(ctx.author.id)
     if allowed:
-        await ctx.send("**Successfully killed!**")
+        # await ctx.send("**Successfully killed!**")
+        pass
     else:
-        await ctx.send("You cannot kill anymore.")
+        await ctx.send("Killing failed.")
 
 
 @commands.command()
@@ -182,10 +185,25 @@ async def start(ctx: commands.Context):
 
             tc = await server.private_category.create_text_channel(str(memb.id))
             await tc.set_permissions(memb, view_channel=True)
+            await tc.set_permissions(memb, view_channel=True)
+            await tc.set_permissions(memb, view_channel=True)
+            await tc.set_permissions(memb, view_channel=True)
+            await tc.set_permissions(memb, view_channel=True)
 
+    DataHandler.set('daykills', [{"day": 1, "kills": []}])
+    DataHandler.set('day', 1)
     DataHandler.set('running', True)
     DataHandler.set('players', [])
     await server.refresh()
+
+    announce_text = "# Game Started\n"
+    announce_text += "The Game of *KILLING ME SOFTLY* has officially started.\n"
+    announce_text += "Everyone has a mission: kill the target at a specified location, with a specified weapon.\n"
+    announce_text += "Don't get killed yourself and survive to see yourself win the game with the most kills.\n"
+    announce_text += "The winner will be rewarded handsomely... hehehe.\n\n"
+    announce_text += "*THE EVIL GM*"
+
+    await server.announcements_channel.send(announce_text)
     await ctx.send("Game started!")
 
 
@@ -211,13 +229,27 @@ async def end(ctx: commands.Context):
 
 @commands.command()
 @role_required("admin")
-async def nextday(ctx: commands.Context):
-    pass
+async def final(ctx: commands.Context):
+    allowed = await server.final()
+    if allowed:
+        await ctx.send("The final day is over.")
+    else:
+        await ctx.send("Unable to process the final day.")
 
 
 @commands.command()
 @role_required("admin")
-async def revive(ctx: commands.Context, *mentions: str):
+async def nextday(ctx: commands.Context):
+    allowed = await server.next_day()
+    if allowed:
+        await ctx.send("Progressed to the next day.")
+    else:
+        await ctx.send("Unable to progress to the next day.")
+
+
+@commands.command()
+@role_required("admin")
+async def systemrevive(ctx: commands.Context, *mentions: str):
     if not DataHandler.get('running'):
         await ctx.send("Command failed. Game isn't running!")
         return
@@ -240,7 +272,7 @@ async def revive(ctx: commands.Context, *mentions: str):
 
 @commands.command()
 @role_required("admin")
-async def kill(ctx: commands.Context, *mentions: str):
+async def systemkill(ctx: commands.Context, *mentions: str):
     if not DataHandler.get('running'):
         await ctx.send("Command failed. Game isn't running!")
         return
@@ -264,7 +296,7 @@ async def kill(ctx: commands.Context, *mentions: str):
 
 @commands.command()
 @role_required("admin")
-async def introduce(ctx: commands.Context, *mentions: str):
+async def systemintroduce(ctx: commands.Context, *mentions: str):
     if not DataHandler.get('running'):
         await ctx.send("Command failed. Game isn't running!")
         return
@@ -286,7 +318,7 @@ async def introduce(ctx: commands.Context, *mentions: str):
 
 @commands.command()
 @role_required("admin")
-async def remove(ctx: commands.Context, *mentions: str):
+async def systemremove(ctx: commands.Context, *mentions: str):
     if not DataHandler.get('running'):
         await ctx.send("Command failed. Reason: Game isn't running!")
         return

@@ -1,37 +1,50 @@
 {
-    "running": true,
-    "daykills": [],
-    "locations": [
-        "B4",
-        "A101",
-        "C",
-        "D"
-    ],
-    "weapons": [
-        "pecivo",
-        "banana",
-        "skare"
-    ],
-    "players": [
+    "running": false,
+    "day": 2,
+    "daykills": [
         {
-            "id": 464753609599352832,
-            "alive": true,
-            "reroll": true,
-            "mission": {
-                "target": 901130202221019227,
-                "location": "A101",
-                "weapon": "pecivo"
-            }
+            "day": 1,
+            "kills": [
+                {
+                    "killer": 448585812649443359,
+                    "target": 464753609599352832
+                },
+                {
+                    "killer": 448585812649443359,
+                    "target": 901130202221019227
+                }
+            ]
         },
         {
-            "id": 901130202221019227,
-            "alive": true,
-            "reroll": true,
-            "mission": {
-                "target": 464753609599352832,
-                "location": "A101",
-                "weapon": "skare"
-            }
+            "day": 2,
+            "kills": []
         }
-    ]
+    ],
+    "locations": [
+        "aleja-laptopa",
+        "menza",
+        "a-zgrada-prizemlje",
+        "a-zgrada-katovi",
+        "b-zgrada-prizemlje",
+        "b-zgrada-predavaonice",
+        "d-zgrada-prizemlje",
+        "d-zgrada-katovi",
+        "glavni-ulaz",
+        "sporedni-ulazi-i-kset"
+    ],
+    "weapons": [
+        "kisobran",
+        "knjiga",
+        "boca",
+        "sunacne-naocale",
+        "pecivo",
+        "plisanac",
+        "pernica",
+        "punjac-za-laptop",
+        "stolica",
+        "dezodorans",
+        "sal",
+        "remen"
+    ],
+    "players": []
 }

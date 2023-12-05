@@ -3,6 +3,22 @@ from discord.ext.commands import Context
 from tools import Player, Mission
 
 
+def get_player(id: int, players: list[Player]) -> Player | None:
+    for p in players:
+        if p.id == id:
+            return p
+    return None
+
+
+def get_kill_count(player: Player, kill_data: list[dict]) -> int:
+    kill_count: int = 0
+    for day in kill_data:
+        for kill in day['kills']:
+            if kill['killer'] == player.id:
+                kill_count += 1
+    return kill_count
+
+
 def categorize_by_n_of_targets(players: list[Player]) -> tuple[set[Player], set[Player], set[Player]]:
     no: set[Player] = set()
     one: set[Player] = set()
