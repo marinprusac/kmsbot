@@ -15,6 +15,7 @@ class DiscordServer:
     alive_role: Role
     dead_role: Role
     registered_role: Role
+    everyone_role: Role
 
     announcements_channel: TextChannel
     private_category: CategoryChannel
@@ -24,17 +25,17 @@ class DiscordServer:
     def __init__(self, guild: Guild):
         self.guild = guild
 
-        announcement_id = 1179035409209106432 # change to announcement
+        announcement_id = 1179035409209106432
         private_category_id = 1179176894239875113
 
-        temp = helper.get_role(guild, 'registered'), helper.get_role(guild, 'dead'), \
+        temp = helper.get_role(guild, '@everyone'), helper.get_role(guild, 'registered'), helper.get_role(guild, 'dead'), \
                helper.get_role(guild, 'alive'), helper.get_role(guild, 'admin'), \
                helper.get_channel(guild, announcement_id), helper.get_category(guild, private_category_id)
 
         if any(role is None for role in temp):
             raise BaseException()
 
-        self.registered_role, self.dead_role, self.alive_role, self.admin_role, \
+        self.everyone_role, self.registered_role, self.dead_role, self.alive_role, self.admin_role, \
         self.announcements_channel, self.private_category = temp
 
     async def final(self):
@@ -61,7 +62,7 @@ class DiscordServer:
                     await self.notify_of_new_mission(p)
             DataHandler.set('players', helper.set_data_from_players(players))
 
-        title = f"## Day {day_count} and FINAL Report"
+        title = f"## Day {day_count} and FINAL Report\nDear {self.everyone_role.mention},"
         first_part = "In the last 24 hours, there have been **0** kills. A pity."
         second_part = "However, the time is up and the game must end!"
         third_part = ""
@@ -154,7 +155,7 @@ class DiscordServer:
                     await self.notify_of_new_mission(p)
             DataHandler.set('players', helper.set_data_from_players(players))
 
-        title = f"## Day {day_count} Report"
+        title = f"## Day {day_count} Report\nDear {self.everyone_role.mention},"
         first_part = "In the last 24 hours, there have been **0** kills. A pity."
         second_part = "In order to bring up the action I decided to give y'all a **free mission re-roll**."
         third_part = "Don't disappoint me again!"
@@ -173,7 +174,7 @@ class DiscordServer:
                 second_part += f"**{target.name}** has been killed by **{killer.name}**.\n"
 
             if len(self.alive_role.members) == 1:
-                title = f"## Day {day_count} and FINAL Report"
+                title = f"## Day {day_count} and FINAL Report\nDear {self.everyone_role.mention},"
                 third_part = f"**{self.alive_role.members[0].name}, being the sole survivor, is victorious!**\nYou have the honor to be my personal murder target! :smiling_imp: \n**MUAHAHAHAHAHAHA**\n"
             else:
                 third_part = "Keep it going and you shall be rewarded graciously..."
