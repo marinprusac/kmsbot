@@ -1,23 +1,31 @@
 {
-    "running": false,
-    "day": 2,
+    "running": true,
+    "day": 1,
     "daykills": [
         {
             "day": 1,
             "kills": [
                 {
-                    "killer": 448585812649443359,
+                    "killer": 460888029784178719,
+                    "target": 393884990829494274
+                },
+                {
+                    "killer": 361937252877729794,
                     "target": 464753609599352832
                 },
                 {
-                    "killer": 448585812649443359,
-                    "target": 901130202221019227
+                    "killer": 688019069877747809,
+                    "target": 448585812649443359
+                },
+                {
+                    "killer": 688019069877747809,
+                    "target": 1107991865107689492
+                },
+                {
+                    "killer": 688019069877747809,
+                    "target": 361937252877729794
                 }
             ]
-        },
-        {
-            "day": 2,
-            "kills": []
         }
     ],
     "locations": [
@@ -46,5 +54,56 @@
         "sal",
         "remen"
     ],
-    "players": []
+    "players": [
+        {
+            "id": 200555911591231489,
+            "alive": true,
+            "reroll": true,
+            "mission": {
+                "target": 944696236718571581,
+                "location": "b-zgrada-predavaonice",
+                "weapon": "boca"
+            }
+        },
+        {
+            "id": 460888029784178719,
+            "alive": true,
+            "reroll": true,
+            "mission": {
+                "target": 688019069877747809,
+                "location": "b-zgrada-predavaonice",
+                "weapon": "pecivo"
+            }
+        },
+        {
+            "id": 464753609599352832,
+            "alive": true,
+            "reroll": true,
+            "mission": {
+                "target": 200555911591231489,
+                "location": "aleja-laptopa",
+                "weapon": "pernica"
+            }
+        },
+        {
+            "id": 688019069877747809,
+            "alive": true,
+            "reroll": false,
+            "mission": {
+                "target": 200555911591231489,
+                "location": "b-zgrada-prizemlje",
+                "weapon": "plisanac"
+            }
+        },
+        {
+            "id": 944696236718571581,
+            "alive": true,
+            "reroll": false,
+            "mission": {
+                "target": 460888029784178719,
+                "location": "aleja-laptopa",
+                "weapon": "pernica"
+            }
+        }
+    ]
 }
