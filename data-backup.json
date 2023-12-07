@@ -1,6 +1,6 @@
 {
     "running": true,
-    "day": 1,
+    "day": 2,
     "daykills": [
         {
             "day": 1,
@@ -20,6 +20,19 @@
                 {
                     "killer": 688019069877747809,
                     "target": 361937252877729794
+                }
+            ]
+        },
+        {
+            "day": 2,
+            "kills": [
+                {
+                    "killer": 464753609599352832,
+                    "target": 200555911591231489
+                },
+                {
+                    "killer": 464753609599352832,
+                    "target": 944696236718571581
                 }
             ]
         }
@@ -52,16 +65,6 @@
     ],
     "players": [
         {
-            "id": 200555911591231489,
-            "alive": true,
-            "reroll": true,
-            "mission": {
-                "target": 944696236718571581,
-                "location": "b-zgrada-predavaonice",
-                "weapon": "boca"
-            }
-        },
-        {
             "id": 460888029784178719,
             "alive": true,
             "reroll": true,
@@ -72,33 +75,23 @@
             }
         },
         {
-            "id": 464753609599352832,
-            "alive": true,
-            "reroll": true,
-            "mission": {
-                "target": 200555911591231489,
-                "location": "aleja-laptopa",
-                "weapon": "pernica"
-            }
-        },
-        {
             "id": 688019069877747809,
             "alive": true,
             "reroll": false,
             "mission": {
-                "target": 200555911591231489,
-                "location": "b-zgrada-prizemlje",
-                "weapon": "plisanac"
+                "target": 464753609599352832,
+                "location": "aleja-laptopa",
+                "weapon": "boca"
             }
         },
         {
-            "id": 944696236718571581,
+            "id": 464753609599352832,
             "alive": true,
-            "reroll": true,
+            "reroll": false,
             "mission": {
                 "target": 460888029784178719,
-                "location": "aleja-laptopa",
-                "weapon": "pernica"
+                "location": "d-zgrada-katovi",
+                "weapon": "remen"
             }
         }
     ]
