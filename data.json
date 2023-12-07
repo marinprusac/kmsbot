@@ -1,6 +1,6 @@
 {
     "running": true,
-    "day": 2,
+    "day": 3,
     "daykills": [
         {
             "day": 1,
@@ -35,6 +35,10 @@
                     "target": 944696236718571581
                 }
             ]
+        },
+        {
+            "day": 3,
+            "kills": []
         }
     ],
     "locations": [
@@ -77,7 +81,7 @@
         {
             "id": 464753609599352832,
             "alive": true,
-            "reroll": false,
+            "reroll": true,
             "mission": {
                 "target": 460888029784178719,
                 "location": "d-zgrada-katovi",
@@ -87,7 +91,7 @@
         {
             "id": 688019069877747809,
             "alive": true,
-            "reroll": false,
+            "reroll": true,
             "mission": {
                 "target": 464753609599352832,
                 "location": "aleja-laptopa",

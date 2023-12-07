@@ -155,7 +155,7 @@ class DiscordServer:
                     await self.notify_of_new_mission(p)
             DataHandler.set('players', helper.set_data_from_players(players))
 
-        title = f"## Day {day_count} Report\nDear {self.everyone_role.mention},"
+        title = f"## Day {day_count} Report\nDear {self.everyone_role},"
         first_part = "In the last 24 hours, there have been **0** kills. A pity."
         second_part = "In order to bring up the action I decided to give y'all a **free mission re-roll**."
         third_part = "Don't disappoint me again!"
@@ -174,10 +174,10 @@ class DiscordServer:
                 second_part += f"**{target.name}** has been killed by **{killer.name}**.\n"
 
             if len(self.alive_role.members) == 1:
-                title = f"## Day {day_count} and FINAL Report\nDear {self.everyone_role.mention},"
+                title = f"## Day {day_count} and FINAL Report\nDear {self.everyone_role},"
                 third_part = f"**{self.alive_role.members[0].name}, being the sole survivor, is victorious!**\nYou have the honor to be my personal murder target! :smiling_imp: \n**MUAHAHAHAHAHAHA**\n"
             else:
-                third_part = "Keep it going and you shall be rewarded graciously..."
+                third_part = "We've witnessed some good action today. I want this to continue, therefore I'm giving you all a free re-roll. **Let the finale begin.**"
 
         await self.announcements_channel.send(f'{title}\n{first_part}\n{second_part}\n{third_part}\n\n{signature}')
 
