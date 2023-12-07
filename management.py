@@ -1,426 +1,455 @@
 import random
-
+from discord.ext import commands
 from discord import Role, Guild, TextChannel, CategoryChannel, Embed, Member
-
 import tools
-from tools import Player
-
-from datahandler import DataHandler
-
+from datahandler import AllData, Player, Mission, KillLog
 import helper
 
 
 class DiscordServer:
-    admin_role: Role
-    alive_role: Role
-    dead_role: Role
-    registered_role: Role
-    everyone_role: Role
-
-    announcements_channel: TextChannel
-    private_category: CategoryChannel
-
-    guild: Guild
-
-    def __init__(self, guild: Guild):
-        self.guild = guild
-
-        announcement_id = 1179035409209106432
-        private_category_id = 1179176894239875113
-
-        temp = helper.get_role(guild, '@everyone'), helper.get_role(guild, 'registered'), helper.get_role(guild, 'dead'), \
-               helper.get_role(guild, 'alive'), helper.get_role(guild, 'admin'), \
-               helper.get_channel(guild, announcement_id), helper.get_category(guild, private_category_id)
-
-        if any(role is None for role in temp):
-            raise BaseException()
-
-        self.everyone_role, self.registered_role, self.dead_role, self.alive_role, self.admin_role, \
-        self.announcements_channel, self.private_category = temp
-
-    async def final(self):
-        day_count: int = DataHandler.get('day')
-        kill_data: list[dict] = DataHandler.get('daykills')
-        last_day: dict | None = None
-        players: list[Player] = helper.get_players_from_data(DataHandler.get('players'))
-
-        for day in kill_data:
-            if day['day'] == day_count:
-                last_day = day
-                break
-
-        if last_day is None:
-            return False
-
-        kills: list[dict] = last_day['kills']
-
-        if len(kills) == 0:
-            players = helper.get_players_from_data(DataHandler.get('players'))
-            for p in players:
-                if not p.reroll:
-                    p.reroll = True
-                    await self.notify_of_new_mission(p)
-            DataHandler.set('players', helper.set_data_from_players(players))
-
-        title = f"## Day {day_count} and FINAL Report\nDear {self.everyone_role.mention},"
-        first_part = "In the last 24 hours, there have been **0** kills. A pity."
-        second_part = "However, the time is up and the game must end!"
-        third_part = ""
-        signature = "*THE EVIL GM*"
-
-        if len(kills) == 1:
-            first_part = f"In the last 24 hours, there has been **1** kill."
-        elif len(kills) > 1:
-            first_part = f"In the last 24 hours, there have been {len(kills)} kills."
-
-        if len(kills) > 0:
-            second_part = '### Kill list\n'
-            for kill in kills:
-                target = helper.get_member(self.guild, id=kill['target'])
-                killer = helper.get_member(self.guild, id=kill['killer'])
-                second_part += f"**{target.name}** has been killed by **{killer.name}**.\n"
-
-        if len(self.alive_role.members) == 1:
-            third_part = f"**{self.alive_role.members[0].name}, being the sole survivor, is victorious!**\nYou have the honor to be my personal murder target! :smiling_imp: \n**MUAHAHAHAHAHAHA**\n"
-        else:
-            survivors: list[Player] = [helper.get_player(member.id, players) for member in self.alive_role.members ]
-            max_kills: int = -1
-            winners: list[Player] = []
-            losers: list[Player] = []
-
-            third_part = "It seems to me that we have multiple survivors...\n"
-            third_part += "### Let's see how they compare:\n"
-
-            for survivor in survivors:
-                kill_count = helper.get_kill_count(survivor, kill_data)
-                max_kills = max(max_kills, kill_count)
-                third_part += f"Number of {helper.get_member(self.guild, id=survivor.id).name}'s kills is {kill_count}.\n"
-
-            for survivor in survivors:
-                if helper.get_kill_count(survivor, kill_data) < max_kills:
-                    losers.append(survivor)
-                else:
-                    winners.append(survivor)
-            third_part += "\n"
-
-            if len(losers) == 1:
-                third_part += "Let's get rid of this coward with a low kill count:\n"
-                third_part += f"***{helper.get_member(self.guild, id=losers[0].id).name}* has been brutally murdered by the *Evil GM***.\n"
-            elif len(losers) > 1:
-                third_part += "Let's get rid of these cowards with low kill counts:\n"
-                for loser in losers:
-                    third_part += f"***{helper.get_member(self.guild, id=loser.id).name}* has been brutally murdered by the **Evil GM***.\n"
-            third_part += "\n"
-
-            if len(winners) == 1:
-                third_part += f"**This leaves us with only one winner. And that is {helper.get_member(self.guild, id=winners[0].id).name}**.\n"
-                third_part += f"You have the honor to be my personal murder target! :smiling_imp: \n**MUAHAHAHAHAHAHA**\n"
-            elif len(winners) > 1:
-                if len(losers) == 0:
-                    third_part += "With everyone being equally as good. I declare you all winners! But most importantly...\n"
-                else:
-                    third_part += f"Now there are only {len(winners)} players left:\n"
-                    for winner in winners:
-                        third_part += f"{helper.get_member(self.guild, id=winner.id).name}\n"
-                    third_part += "I declare you all winners! But most importantly...\n"
-
-                third_part += f"You have the honor to be my personal murder targets! :smiling_imp: \n**MUAHAHAHAHAHAHA**\n"
-
-        await self.announcements_channel.send(f'{title}\n{first_part}\n{second_part}\n{third_part}\n\n{signature}')
-
-        kill_data.append({'day': day_count+1, 'kills': []})
-        DataHandler.set('day', day_count+1)
-        return True
-
-    async def next_day(self):
-        day_count: int = DataHandler.get('day')
-        days_dict: list[dict] = DataHandler.get('daykills')
-        last_day: dict | None = None
-
-        for day in days_dict:
-            if day['day'] == day_count:
-                last_day = day
-                break
-
-        if last_day is None:
-            return False
-
-        kills: list[dict] = last_day['kills']
-
-        if len(kills) == 0:
-            players = helper.get_players_from_data(DataHandler.get('players'))
-            for p in players:
-                if not p.reroll:
-                    p.reroll = True
-                    await self.notify_of_new_mission(p)
-            DataHandler.set('players', helper.set_data_from_players(players))
-
-        title = f"## Day {day_count} Report\nDear {self.everyone_role.mention},"
-        first_part = "In the last 24 hours, there have been **0** kills. A pity."
-        second_part = "In order to bring up the action I decided to give y'all a **free mission re-roll**."
-        third_part = "Don't disappoint me again!"
-        signature = "*THE EVIL GM*"
-
-        if len(kills) == 1:
-            first_part = f"In the last 24 hours, there has been **1** kill."
-        elif len(kills) > 1:
-            first_part = f"In the last 24 hours, there have been {len(kills)} kills."
-
-        if len(kills) > 0:
-            second_part = '### Kill list\n'
-            for kill in kills:
-                target = helper.get_member(self.guild, id=kill['target'])
-                killer = helper.get_member(self.guild, id=kill['killer'])
-                second_part += f"**{target.name}** has been killed by **{killer.name}**.\n"
-
-            if len(self.alive_role.members) == 1:
-                title = f"## Day {day_count} and FINAL Report\nDear {self.everyone_role.mention},"
-                third_part = f"**{self.alive_role.members[0].name}, being the sole survivor, is victorious!**\nYou have the honor to be my personal murder target! :smiling_imp: \n**MUAHAHAHAHAHAHA**\n"
-            else:
-                third_part = "Keep it going and you shall be rewarded graciously..."
-
-        await self.announcements_channel.send(f'{title}\n{first_part}\n{second_part}\n{third_part}\n\n{signature}')
-
-        days_dict.append({'day': day_count+1, 'kills': []})
-        DataHandler.set('day', day_count+1)
-        return True
-
-    async def mission_accomplished(self, killer_id: int) -> bool:
-
-        players: list[Player] = helper.get_players_from_data(DataHandler.get("players"))
-        new_players: list[Player] = players.copy()
-
-        killer_player: Player | None = helper.get_player(killer_id, players)
-
-        if killer_player is None or killer_player.mission is None:
-            return False
-
-        killed_player: Player | None = helper.get_player(killer_player.mission.target, players)
-
-        if killed_player is None:
-            return False
-
-        self.record_kill(killer_player, killed_player)
-
-        killed_member = helper.get_member(self.guild, id=killed_player.id)
-        if killed_member is None:
-            return False
-
-        await killed_member.remove_roles(self.alive_role)
-        await killed_member.add_roles(self.dead_role)
-        await self.notify_of_death(killed_member, killer_player)
-
-        if killed_player is not None and killed_player.mission.target != killer_player.id:
-            killer_player.mission = killed_player.mission
-            killed_player.reroll = True
-        elif len(players) <= 2:
-            killer_player.mission = None
-
-        new_players.append(killer_player)
-        new_players.remove(killed_player)
-
-        DataHandler.set("players", helper.set_data_from_players(new_players))
-
-        await self.notify_of_new_mission(killer_player)
-        await self.refresh()
-        return True
-
-    def record_kill(self, killer: Player, target: Player) -> bool:
-        day_count: int = DataHandler.get("day")
-        day_dict: list[dict] = DataHandler.get("daykills")
-        new_day_dict: list[dict] = []
-
-        current_day: dict | None = None
-        for day in day_dict:
-            if day["day"] == day_count:
-                current_day = day
-            else:
-                new_day_dict.append(day)
-        if current_day is None:
-            return False
-
-        current_day["kills"].append({"killer": killer.id, "target": target.id})
-        new_day_dict.append(current_day)
-
-        DataHandler.set('daykills', new_day_dict)
-        return True
-
-    async def reroll_mission(self, player_id: int, reroll_person: bool = False, reroll_location: bool = False, reroll_weapon: bool = False):
-        players: list[Player] = helper.get_players_from_data(DataHandler.get('players'))
-        new_players: list[Player] = []
-        rerolling_player: Player | None = None
-        for p in players:
-            if p.id == player_id:
-                rerolling_player = p
-            else:
-                new_players.append(p)
-        if not rerolling_player.reroll or reroll_person and len(players) <= 2:
-            return False
-        if reroll_location:
-            locations: list[str] = DataHandler.get('locations')
-            l_restrictions: set[tuple] = set()
-            l_restrictions.add((0,rerolling_player.mission.location))
-            delegation = tools.delegation_algorithm({0}, set(locations), set(), l_restrictions)
-            rerolling_player.mission.location = list(delegation)[0][1]
-        if reroll_weapon:
-            weapons: list[str] = DataHandler.get('weapons')
-            w_restrictions: set[tuple] = set()
-            w_restrictions.add((0, rerolling_player.mission.weapon))
-            delegation = tools.delegation_algorithm({0}, set(weapons), set(), w_restrictions)
-            rerolling_player.mission.weapon = list(delegation)[0][1]
-        if reroll_person:
-            not_targeted, targeted_once, targeted_twice = helper.categorize_by_n_of_targets(players)
-            restrictions: set[tuple[int, int]] = {(player_id, player_id), (player_id, rerolling_player.mission.target)}
-            if len(players) >= 4:
-                for p in players:
-                    if p.mission is not None and p.mission.target == player_id:
-                        restrictions.add((player_id, p.id))
-            mission = tools.delegation_algorithm({player_id}, set(map(lambda pl: pl.id, not_targeted)), set(map(lambda pl: pl.id, targeted_once)), restrictions)
-            rerolling_player.mission.target = list(mission)[0][1]
-        rerolling_player.reroll = False
-        new_players.append(rerolling_player)
-        DataHandler.set('players', helper.set_data_from_players(new_players))
-        await self.notify_of_new_mission(rerolling_player)
-        await self.refresh()
-        return True
-
-    async def notify_of_death(self, member: Member, killer: Player | None = None):
-        channel = helper.get_channel_by_name(self.guild, str(member.id))
-        if channel is None:
-            return
-        if killer is None:
-            await channel.send(f"You've been killed by **{self.guild.me.name}**. Spooky")
-            return
-        await channel.send(f"You've been killed by **{helper.get_member(self.guild, id=killer.id).name}**. Spooky")
-
-    async def notify_of_new_mission(self, player: Player):
-        channel = helper.get_channel_by_name(self.guild, str(player.id))
-        if channel is None:
-            return
-        if player.mission is None:
-            await channel.send("**You have no more targets to kill!**")
-            return
-        target: Member | None = helper.get_member(self.guild, id=player.mission.target)
-        if target is None:
-            return
-
-        embed = Embed(title="Assassination Mission",
-                              description="This is a mission assigned uniquely to you. Kill the target at the specified location and with the specified weapon. Don't get seen.",
-                              color=0xFF0000)
-        embed.add_field(name="Target", value=f"Your target is the person named **{target.name}**.",
-                        inline=False)
-
-        embed.add_field(name="Location", value=f"You must murder your target at: **{player.mission.location}**.", inline=True)
-        embed.add_field(name="Weapon", value=f"Use **{player.mission.weapon}** to murder them!", inline=True)
-
-        footer_text = ''
-        if player.reroll:
-            footer_text = 'You have an available re-roll. Use it wisely!'
-        else:
-            footer_text = 'You currently have no available re-rolls.'
-
-        embed.set_footer(text=footer_text)
-        await channel.send(embed=embed)
-
-    async def clean_up_illegal_roles(self):
-        game_running = DataHandler.get('running')
-        if game_running:
-            for member in self.registered_role.members:
-                await member.remove_roles(self.registered_role)
-        else:
-            for member in self.alive_role.members:
-                await member.remove_roles(self.alive_role)
-            for member in self.dead_role.members:
-                await member.remove_roles(self.dead_role)
-
-    async def update_missions(self):
-        previous_players: list[tools.Player] = helper.get_players_from_data(DataHandler.get('players'))
-        alive_players: list[Player] = [Player(member.id) for member in self.alive_role.members]
-
-        stay_players: list[Player] = []
-        remove_players: list[Player] = []
-
-        # extract players that stayed and players that got removed
-        for p1 in previous_players:
-            present = False
-            for p2 in alive_players:
-                if p2.id == p1.id:
-                    p2.alive = p1.alive
-                    p2.reroll = p1.reroll
-                    p2.mission = p1.mission
-                    stay_players.append(p1)
-                    present = True
-                    break
-            if not present:
-                remove_players.append(p1)
-
-        # remove missions targeting removed players
-        for ps in stay_players:
-            for pr in remove_players:
-                if ps.mission is not None and ps.mission.target == pr.id:
-                    ps.mission = None
-                    break
-
-        # check if there are enough players
-        if len(alive_players) <= 1:
-            dictps = []
-            for p in alive_players:
-                if p.mission is not None:
-                    p.mission = None
-                    await self.notify_of_new_mission(p)
-                dictps.append(helper.player_to_dict(p))
-            DataHandler.set("players", dictps)
-            return
-
-        # prepare data for generating new missions
-        missing_mission: set[int] = set()
-        un_targeted: set[int] = set()
-        targeted: set[int] = set()
-        restrictions: set[tuple[int, int]] = set()
-
-        for p1 in alive_players:
-            restrictions.add((p1.id, p1.id))
-
-            if p1.mission is None:
-                missing_mission.add(p1.id)
-            elif len(alive_players) > 3:
-                restrictions.add((p1.mission.target, p1.id))
-
-            targeted_count = 0
-
-            has_mission = False
-
-            for p2 in alive_players:
-                if p1.mission is not None and p1.mission.target == p2.id:
-                    has_mission = True
-                if p2.mission and p2.mission.target == p1.id:
-                    targeted_count += 1
-
-            if not has_mission:
-                p1.mission = None
-                missing_mission.add(p1.id)
-
-            if targeted_count == 1:
-                targeted.add(p1.id)
-            elif targeted_count == 0:
-                un_targeted.add(p1.id)
-
-        # delegate new missions
-        new_targets = tools.delegation_algorithm(missing_mission, un_targeted,
-                                                 targeted, restrictions)
-        locations: list[str] = DataHandler.get("locations")
-        weapons: list[str] = DataHandler.get("weapons")
-
-        for m in new_targets:
-            loc = random.choice(locations)
-            wpn = random.choice(weapons)
-            for p1 in alive_players:
-                if p1.id == m[0]:
-                    p1.mission = tools.Mission(m[1], loc, wpn)
-                    await self.notify_of_new_mission(player=p1)
-
-        DataHandler.set("players", helper.set_data_from_players(alive_players))
-
-    async def refresh(self):
-        await self.clean_up_illegal_roles()
-        await self.update_missions()
+	admin_role: Role
+	alive_role: Role
+	dead_role: Role
+	registered_role: Role
+	everyone_role: Role
+
+	announcements_channel: TextChannel
+	admin_channel: TextChannel
+	private_category: CategoryChannel
+
+	guild: Guild
+	data: AllData
+
+	def __init__(self, guild: Guild):
+		self.guild = guild
+
+		announcement_id = 1179035409209106432
+		admin_channel_id = 0
+		private_category_id = 1179176894239875113
+
+		temp = helper.get_role(guild, '@everyone'), helper.get_role(guild, 'registered'), \
+		       helper.get_role(guild, 'dead'), helper.get_role(guild, 'alive'), helper.get_role(guild, 'admin'), \
+		       helper.get_channel(guild, announcement_id), helper.get_channel(guild, admin_channel_id),\
+		       helper.get_category(guild, private_category_id)
+
+		if any(role is None for role in temp):
+			raise BaseException()
+
+		self.everyone_role, self.registered_role, self.dead_role, self.alive_role, self.admin_role, \
+		self.announcements_channel, self.admin_channel, self.private_category = temp
+		self.data = AllData(guild.id)
+
+	async def start_game(self):
+
+		# check if the conditions are met
+		if self.data.game_running:
+			await self.admin_channel.send("Command failed. Game is already running!")
+			return
+		if len(self.registered_role.members) <= 1:
+			await self.admin_channel.send("There aren't enough players! :(")
+			return
+		if len(self.data.locations) < 1:
+			await self.admin_channel.send("There aren't enough locations! :(")
+			return
+		if len(self.data.weapons) < 1:
+			await self.admin_channel.send("There aren't enough weapons! :(")
+			return
+
+		# add all registered players to the game
+		for member in self.registered_role.members.copy():
+			await self.add_player(member, False)
+
+		# announce game start to everyone
+		announce_text = "# Game Started\n"
+		announce_text += "The Game of *KILLING ME SOFTLY* has officially started.\n"
+		announce_text += "Everyone has a mission: kill the target at a specified location, with a specified weapon.\n"
+		announce_text += "Don't get killed yourself and survive to see yourself win the game with the most kills.\n"
+		announce_text += "The winner will be rewarded handsomely... hehehe.\n\n"
+		announce_text += "*THE EVIL GM*"
+		await self.announcements_channel.send(announce_text)
+
+		# set initial missions
+		await self.set_initial_missions()
+
+		# finalize data and return
+		self.data.game_running = True
+		self.data.day_number = 1
+		self.data.save()
+		await self.admin_channel.send("Game started!")
+
+	async def end_game(self):
+		if not self.data.game_running:
+			await self.admin_channel.send("Command failed. Reason: Game isn't running!")
+			return
+
+		for player in self.data.players.copy():
+			await self.remove_player(player, False)
+
+		self.data.game_running = False
+		self.data.players = []
+		self.data.kill_logs = []
+		self.data.day_number = 0
+		self.data.save()
+		await self.admin_channel.send("Game ended!")
+
+	async def add_player(self, member: Member, special: bool = True):
+		players = self.data.players
+
+		if not self.data.game_running:
+			await self.admin_channel.send("Game isn't running")
+			return
+
+		# add player to the list
+		player = Player(member.id)
+		players.append(player)
+
+		# remove registration and mark as alive
+		await member.remove_roles(self.registered_role)
+		await member.add_roles(self.alive_role)
+
+		# create private channel
+		tc = await self.private_category.create_text_channel(str(member.id))
+		for i in range(5):
+			await tc.set_permissions(member, view_channel=True)  # repeating because sometimes it doesn't work
+
+		# if the adding was special, it means that the player was added in the middle of the game
+		if special:
+			mission = self.get_new_mission(player)
+			await self.assign_mission(player, mission, True)
+			await self.announcements_channel.send(f"{self.everyone_role},"
+			                                      f"**{member.name}** has been added to the game, watch out!")
+
+		self.data.save()
+
+	async def remove_player(self, player: Player, special: bool = True):
+		member = helper.get_member_from_player(self.guild, player)
+
+		self.data.players.remove(player)
+
+		# remove game-related roles
+		await member.remove_roles(self.alive_role, self.dead_role)
+
+		# delete private channel
+		await helper.get_player_channel(self.guild, player).delete()
+
+		# if removal was special, announce the removal and refresh missions
+		if special:
+			for other_player in self.data.players:
+				if other_player.mission and other_player.mission.target_id == player.id:
+					mission = self.get_new_mission(other_player)
+					await self.assign_mission(other_player, mission, False)
+			await self.announcements_channel.send(f"{self.everyone_role},"
+			                                      f"**{member.name}** has been removed fom the game, phew.")
+
+		self.data.save()
+
+	async def day_report(self, final: bool = False):
+		self.data.load()
+
+		day_count: int = self.data.day_number
+		kill_logs: list[KillLog] = self.data.kill_logs
+		last_day: list[KillLog] = list(filter(lambda log: log.day_number == day_count, kill_logs))
+		players: list[Player] = self.data.players
+		alive_players: list[Player] = list(filter(lambda p: p.is_alive, players))
+		final = final or len(alive_players) == 1
+
+		# if there were no kills last night, grant rerolls
+		if len(last_day) == 0:
+			for p in players:
+				if not p.has_reroll:
+					await self.assign_mission(p, p.mission, True)
+			self.data.save()
+
+		# message constructing
+		title = greeting = first = second = third = signature = ''
+		greeting = f"Dear {self.everyone_role},"
+		first = f"In the last 24 hours, the number of kills was {len(last_day)}."
+		signature = "*THE EVIL GM*"
+
+		if not final:
+			title = f"## Day {day_count} and Report"
+			if len(kill_logs) == 0:
+				second = "In order to bring up the action I decided to give y'all a **free mission re-roll**."
+				third = "Don't disappoint me again!"
+			else:
+				second = "### Kill list:\n"
+				third = "Keep it going and you shall be rewarded graciously..."
+
+				for kill_log in last_day:
+					target = helper.get_member(self.guild, id=kill_log.mission.target_id)
+					killer = helper.get_member(self.guild, id=kill_log.killer_id)
+					second += f"**{target.name}** has been killed by **{killer.name}**.\n"
+
+		else:
+			title = f"## Day {day_count} and FINAL Report"
+			second = "Time is up and the game must end!"
+			if len(alive_players) == 1:
+				third = f"**{self.alive_role.members[0].name}, being the sole survivor, is victorious!**\nYou have the honor to be my personal murder target! :smiling_imp: \n**MUAHAHAHAHAHAHA**\n"
+
+			else:
+				third = "It seems to me that we have multiple survivors...\n"
+				third += "### Let's see how they compare:\n"
+
+				max_kills: int = -1
+				winners: list[Player] = []
+				losers: list[Player] = []
+
+				for survivor in alive_players:
+					kill_count = helper.get_kill_count(survivor, kill_logs)
+					max_kills = max(max_kills, kill_count)
+					third += f"Number of {helper.get_member(self.guild, id=survivor.id).name}'s kills is {kill_count}.\n"
+
+				for survivor in alive_players:
+					if helper.get_kill_count(survivor, kill_logs) < max_kills:
+						losers.append(survivor)
+					else:
+						winners.append(survivor)
+				third += "\n"
+
+				if len(losers) == 1:
+					third += "Let's get rid of this coward with a low kill count:\n"
+					third += f"***{helper.get_member(self.guild, id=losers[0].id).name}* has been brutally murdered by the *Evil GM***.\n"
+				elif len(losers) > 1:
+					third += "Let's get rid of these cowards with low kill counts:\n"
+					for loser in losers:
+						third += f"***{helper.get_member(self.guild, id=loser.id).name}* has been brutally murdered by the **Evil GM***.\n"
+				third += "\n"
+
+				if len(winners) == 1:
+					third += f"**This leaves us with only one winner. And that is {helper.get_member(self.guild, id=winners[0].id).name}**.\n"
+					third += f"You have the honor to be my personal murder target! :smiling_imp: \n**MUAHAHAHAHAHAHA**\n"
+				elif len(winners) > 1:
+					if len(losers) == 0:
+						third += "With everyone being equally as good. I declare you all winners! But most importantly...\n"
+					else:
+						third += f"Now there are only {len(winners)} players left:\n"
+						for winner in winners:
+							third += f"{helper.get_member(self.guild, id=winner.id).name}\n"
+						third += "I declare you all winners! But most importantly...\n"
+
+					third += f"You have the honor to be my personal murder targets! :smiling_imp: \n**MUAHAHAHAHAHAHA**\n"
+
+		await self.announcements_channel.send(f'{title}\n{greeting}\n{first}\n{second}\n{third}\n\n{signature}')
+
+		if not final:
+			self.data.day_number += 1
+		return True
+
+	async def mission_accomplished(self, killer: Player):
+		self.data.load()
+		players: list[Player] = self.data.players
+
+		if killer.mission is None:
+			raise AttributeError
+
+		target: Player = helper.get_player(killer.mission.target_id, players)
+
+		await self.send_private_message(killer, f"You successfully killed your target!")
+		await self.kill_player(target, killer)
+
+		if target.mission.target_id != killer.id:
+			await self.assign_mission(killer, target.mission, True)
+		elif len(players) <= 2:
+			await self.assign_mission(killer, None, True)
+
+	async def kill_player(self, target: Player, killer: Player | None = None):
+		self.data.load()
+		players = self.data.players
+		day_count = self.data.day_number
+
+		if killer is not None and killer.mission is None:
+			raise AttributeError
+
+		players.remove(target)
+		target_member = helper.get_member_from_player(self.guild, target)
+		await target_member.remove_roles(self.alive_role)
+		await target_member.add_roles(self.dead_role)
+
+		if killer is None:
+			await self.send_private_message(target, f"You've been killed by {self.guild.me}! Spooky.")
+		else:
+			self.data.kill_logs.append(KillLog(killer.id, day_count, killer.mission))
+			await self.send_private_message(target,
+			                                f"You've been killed by {self.guild.me}! You'll get you're revenge one day.")
+
+		for player in players:
+			if player is not killer and player is not target:
+				if player.mission and player.mission.target_id == target.id:
+					mission = self.get_new_mission(player)
+					await self.send_private_message(player, "Your target has been mysteriously killed.")
+					await self.assign_mission(player, mission)
+
+		self.data.save()
+
+	def get_new_mission(self, player: Player) -> Mission:
+		self.data.load()
+		players = self.data.players
+		locations = self.data.locations
+		weapons = self.data.weapons
+
+		restrictions: set[tuple[int, int]] = {(player.id, player.id)}
+		untargeted: set[int] = set()
+		targeted_once: set[int] = set()
+
+		for p in players:
+			t_count = 0
+			for p2 in players:
+				if p2.mission and p2.mission.target_id == p.id:
+					t_count += 1
+			if t_count == 0:
+				untargeted.add(p.id)
+			elif t_count == 1:
+				targeted_once.add(p.id)
+
+		if len(players) > 3:
+			for other_player in players:
+				if other_player is not player and other_player.mission.target_id == player.id:
+					restrictions.add((player.id, other_player.id))
+
+		target_id = tools.delegation_algorithm({player}, untargeted, targeted_once, restrictions)[0][1]
+		location = random.choice(locations)
+		weapon = random.choice(weapons)
+
+		return Mission(target_id, location, weapon)
+
+	async def assign_mission(self, player: Player, mission: Mission | None, get_reroll: bool = False):
+		self.data.load()
+		players = self.data.players
+
+		channel = helper.get_channel_by_name(self.guild, str(player.id))
+
+		if mission is None:
+			await channel.send("**You have no more targets to kill!**")
+			return
+
+		target = helper.get_player(mission.target_id, players)
+		target_member = helper.get_member_from_player(self.guild, target)
+
+		player.mission = mission
+		player.has_reroll = player.has_reroll or get_reroll
+
+		self.data.save()
+
+		embed = Embed(title="Assassination Mission",
+		              description="This is a mission assigned uniquely to you. Kill the target at the specified location and with the specified weapon. Don't be seen.",
+		              color=0xFF0000)
+		embed.add_field(name="Target", value=f"Your target is the person named **{target_member.name}**.",
+		                inline=False)
+
+		embed.add_field(name="Location", value=f"You must murder your target at: **{mission.location}**.",
+		                inline=True)
+		embed.add_field(name="Weapon", value=f"Use **{mission.weapon}** to murder them!", inline=True)
+
+		if player.has_reroll:
+			footer_text = 'You have an available re-roll. Use it wisely!'
+		else:
+			footer_text = 'You currently have no available re-rolls.'
+
+		embed.set_footer(text=footer_text)
+		await channel.send(embed=embed)
+
+	async def reroll_mission(self, player: Player, person: bool = False, location: bool = False, weapon: bool = False):
+		self.data.load()
+		players = self.data.players
+		locations = self.data.locations
+		weapons = self.data.weapons
+
+		if not player.has_reroll:
+			await self.send_private_message(player, "You don't have any re-rolls left!")
+			return
+		if not person and not location and not weapon:
+			await self.send_private_message(player, "Please specify what you want to reroll (person, location, weapon, all).")
+			return
+		if person and len(players) <= 2:
+			await self.send_private_message(player, "There aren't enough alive players to re-roll.")
+			return
+
+		mission = Mission(player.mission.target_id, player.mission.location, player.mission.weapon)
+
+		if location:
+			l_restrictions: set[tuple] = set()
+			l_restrictions.add((0, player.mission.location))
+			delegation = tools.delegation_algorithm({0}, set(locations), set(), l_restrictions)
+			mission.location = list(delegation)[0][1]
+
+		if weapon:
+			w_restrictions: set[tuple] = set()
+			w_restrictions.add((0, player.mission.weapon))
+			delegation = tools.delegation_algorithm({0}, set(weapons), set(), w_restrictions)
+			mission.weapon = list(delegation)[0][1]
+
+		if person:
+			not_targeted, targeted_once, targeted_twice = helper.categorize_by_n_of_targets(players)
+			restrictions: set[tuple[int, int]] = {(player.id, player.id), (player.id, player.mission.target_id)}
+			if len(players) >= 4:
+				for p in players:
+					if p.mission is not None and p.mission.target_id == player.id:
+						restrictions.add((player.id, p.id))
+			missions = tools.delegation_algorithm({player.id}, set(map(lambda pl: pl.id, not_targeted)),
+			                                      set(map(lambda pl: pl.id, targeted_once)), restrictions)
+			mission.target_id = list(missions)[0][1]
+
+		player.has_reroll = False
+		self.data.save()
+		await self.assign_mission(player, player.mission)
+
+	async def send_private_message(self, player: Player, message: str):
+		channel = helper.get_player_channel(self.guild, player)
+		await channel.send(message)
+
+	async def fix_roles(self):
+		self.data.load()
+		players = self.data.players
+		game_running = self.data.game_running
+		for member in self.guild.members:
+			if not game_running:
+				if self.alive_role in member.roles or self.dead_role in member.roles:
+					await member.remove_roles(self.alive_role, self.dead_role)
+			else:
+				player = helper.get_player(member.id, players)
+				if player.is_alive:
+					if self.dead_role in member.roles:
+						await member.remove_roles(self.dead_role)
+					if self.alive_role not in member.roles:
+						await member.add_roles(self.alive_role)
+				else:
+					if self.dead_role not in member.roles:
+						await member.add_roles(self.dead_role)
+					if self.alive_role in member.roles:
+						await member.remove_roles(self.alive_role)
+
+	async def set_initial_missions(self):
+		self.data.load()
+		players = self.data.players
+		locations = self.data.locations
+		weapons = self.data.weapons
+
+		player_order: list[Player] = tools.fisher_yates_shuffle(players)
+
+		for i in range(len(players)):
+			player = players[i]
+			target = player_order[i]
+			loc = random.choice(locations)
+			wpn = random.choice(weapons)
+			mission = Mission(target.id, loc, wpn)
+			await self.assign_mission(player, mission, True)
+
+
+servers: dict[int, DiscordServer] = {}
+
+
+def get_server(guild_id: int):
+	if guild_id in servers:
+		return servers[guild_id]
+	raise AttributeError
+
+
+def add_server(guild_id: int, server: DiscordServer):
+	if guild_id in servers:
+		raise AttributeError
+	servers[guild_id] = server
+
+
+async def prepare_commands(bot: commands.Bot):
+	for guild in bot.guilds:
+		add_server(guild.id, DiscordServer(guild))

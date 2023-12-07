@@ -1,21 +1,31 @@
 from discord import Guild, Member, Role, TextChannel, CategoryChannel
 from discord.ext.commands import Context
-from tools import Player, Mission
+from datahandler import Player, Mission, KillLog
 
 
-def get_player(id: int, players: list[Player]) -> Player | None:
+def get_player_channel(guild: Guild, player: Player) -> TextChannel:
+    return get_channel_by_name(guild, str(player.id))
+
+
+def get_member_from_player(guild: Guild, player: Player) -> Member:
+    memb = guild.get_member(player.id)
+    if memb is None:
+        raise AttributeError
+    return memb
+
+
+def get_player(id: int, players: list[Player]) -> Player:
     for p in players:
         if p.id == id:
             return p
-    return None
+    raise AttributeError
 
 
-def get_kill_count(player: Player, kill_data: list[dict]) -> int:
+def get_kill_count(player: Player, kill_logs: list[KillLog]) -> int:
     kill_count: int = 0
-    for day in kill_data:
-        for kill in day['kills']:
-            if kill['killer'] == player.id:
-                kill_count += 1
+    for kill_log in kill_logs:
+        if kill_log.killer_id == player.id:
+            kill_count += 1
     return kill_count
 
 
@@ -27,7 +37,7 @@ def categorize_by_n_of_targets(players: list[Player]) -> tuple[set[Player], set[
     for p in players:
         count = 0
         for p2 in players:
-            if p2.mission is not None and p2.mission.target == p.id:
+            if p2.mission is not None and p2.mission.target_id == p.id:
                 count += 1
         if count == 0:
             no.add(p)
@@ -40,8 +50,8 @@ def categorize_by_n_of_targets(players: list[Player]) -> tuple[set[Player], set[
 
 def dict_to_player(d: dict) -> Player:
     p = Player(d["id"])
-    p.alive = d["alive"]
-    p.reroll = d["reroll"]
+    p.is_alive = d["alive"]
+    p.has_reroll = d["reroll"]
     if "mission" in d:
         p.mission = Mission(d["mission"]["target"], d["mission"]["location"], d["mission"]["weapon"])
     else:
@@ -52,11 +62,11 @@ def dict_to_player(d: dict) -> Player:
 def player_to_dict(p: Player) -> dict:
     d = dict()
     d["id"] = p.id
-    d["alive"] = p.alive
-    d["reroll"] = p.reroll
+    d["alive"] = p.is_alive
+    d["reroll"] = p.has_reroll
     if p.mission is not None:
         d["mission"] = dict()
-        d["mission"]["target"] = p.mission.target
+        d["mission"]["target"] = p.mission.target_id
         d["mission"]["location"] = p.mission.location
         d["mission"]["weapon"] = p.mission.weapon
     return d
@@ -71,73 +81,79 @@ def set_data_from_players(players: list[Player]) -> list[dict]:
 
 
 # helper functions
-def extract_members_from_args(ctx: Context,
-                              *mentions: str) -> list[Member] | None:
+def extract_members_from_args(ctx: Context, *mentions: str) -> list[Member]:
     guild = ctx.guild
     if guild is None:
-        return None
+        raise AttributeError
 
     members: list[Member] = []
     if len(mentions) == 0:
         member = get_member(guild, id=ctx.author.id)
-        if member is None:
-            return None
         members.append(member)
 
     for mention in mentions:
         member = get_member_from_mention(guild, mention)
-        if member is None or member.bot:
-            return None
         members.append(member)
     return members
 
 
 def get_member(guild: Guild, name: str | None = None,
-               id: int | None = None) -> Member | None:
+               id: int | None = None) -> Member:
     if name is not None:
         memb = guild.get_member_named(name)
+        if memb is None:
+            raise AttributeError
         return memb
 
     if id is not None:
         memb = guild.get_member(id)
+        if memb is None:
+            raise AttributeError
         return memb
+    raise AttributeError
 
 
-def get_member_from_mention(guild: Guild, mention: str) -> Member | None:
+def get_member_from_mention(guild: Guild, mention: str) -> Member:
     if mention.startswith('<@') and mention.endswith('>'):
         mention = mention.strip('<@!>')
         return guild.get_member(int(mention))
-    return None
+    raise AttributeError
 
 
-def get_role(guild: Guild, name: str | None = None,
-             id: int | None = None) -> Role | None:
+def get_role(guild: Guild, name: str | None = None, id: int | None = None) -> Role:
     if guild is None:
-        return None
+        raise AttributeError
     if name is not None:
         for r in guild.roles:
             if r.name == name:
                 return r
-        return None
+        raise AttributeError
 
     if id is not None:
-        return guild.get_role(id)
+        role = guild.get_role(id)
+        if role is None:
+            raise AttributeError
+        return role
+    raise AttributeError
 
 
-def get_channel(guild: Guild, channel_id: int) -> TextChannel | None:
-    return guild.get_channel(channel_id)
+def get_channel(guild: Guild, channel_id: int) -> TextChannel:
+    channel = guild.get_channel(channel_id)
+    if channel is None:
+        raise AttributeError
+    return channel
 
 
-def get_channel_by_name(guild: Guild, name: str) -> TextChannel | None:
+def get_channel_by_name(guild: Guild, name: str) -> TextChannel:
     channels = guild.text_channels
     for c in channels:
         if c.name == name:
             return c
-    return None
+    raise AttributeError
 
 
-def get_category(guild: Guild, id: int) -> CategoryChannel | None:
+def get_category(guild: Guild, id: int) -> CategoryChannel:
     for c in guild.categories:
         if c.id == id:
             return c
-    return None
+    raise AttributeError

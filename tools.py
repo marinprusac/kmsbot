@@ -1,4 +1,3 @@
-import json
 import random
 
 
@@ -10,35 +9,13 @@ def fisher_yates_shuffle(lst: list) -> list:
     return lst2
 
 
-class Mission:
-    target: int
-    location: str
-    weapon: str
-
-    def __init__(self, target: int, location: str, weapon: str):
-        self.target = target
-        self.location = location
-        self.weapon = weapon
-
-
-class Player:
-    id: int
-    alive: bool = True
-    reroll: bool = True
-    mission: Mission | None
-
-    def __init__(self, id: int, mission: Mission | None = None):
-        self.id = id
-        self.mission = mission
-
-
 def delegation_algorithm(pickers: set, options: set, secondary_options: set,
-                         restrictions: set[tuple]) -> set[tuple]:
+                         restrictions: set[tuple]) -> list[tuple]:
     not_targeting: set[int] = set(pickers)
     not_targeted: set[int] = set(options)
     targeted_once: set[int] = set(secondary_options)
 
-    return_val: set[tuple[int, int]] = set()
+    return_val: list[tuple[int, int]] = []
 
     while len(not_targeting) > 0:
         min_index = -1
@@ -55,7 +32,7 @@ def delegation_algorithm(pickers: set, options: set, secondary_options: set,
                     if (i, j) not in restrictions:
                         targeted_once.remove(j)
                         not_targeting.remove(i)
-                        return_val.add((i, j))
+                        return_val.append((i, j))
                         break_out = True
                         break
                 break
@@ -68,7 +45,7 @@ def delegation_algorithm(pickers: set, options: set, secondary_options: set,
 
         for j in not_targeted.copy():
             if (min_index, j) not in restrictions:
-                return_val.add((min_index, j))
+                return_val.append((min_index, j))
                 not_targeted.remove(j)
                 targeted_once.add(j)
                 not_targeting.remove(min_index)
