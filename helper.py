@@ -3,6 +3,10 @@ from discord.ext.commands import Context
 from datahandler import Player, Mission, KillLog
 
 
+def get_alive_players(players: list[Player]) -> list[Player]:
+    return [p for p in players if p.is_alive]
+
+
 def get_player_channel(guild: Guild, player: Player) -> TextChannel:
     return get_channel_by_name(guild, str(player.id))
 
@@ -29,10 +33,10 @@ def get_kill_count(player: Player, kill_logs: list[KillLog]) -> int:
     return kill_count
 
 
-def categorize_by_n_of_targets(players: list[Player]) -> tuple[set[Player], set[Player], set[Player]]:
-    no: set[Player] = set()
-    one: set[Player] = set()
-    two: set[Player] = set()
+def categorize_by_n_of_targets(players: list[Player]) -> tuple[list[Player], list[Player], list[Player]]:
+    no: list[Player] = []
+    one: list[Player] = []
+    two: list[Player] = []
 
     for p in players:
         count = 0
@@ -40,47 +44,15 @@ def categorize_by_n_of_targets(players: list[Player]) -> tuple[set[Player], set[
             if p2.mission is not None and p2.mission.target_id == p.id:
                 count += 1
         if count == 0:
-            no.add(p)
+            no.append(p)
         elif count == 1:
-            one.add(p)
+            one.append(p)
         else:
-            two.add(p)
+            two.append(p)
     return no, one, two
 
 
-def dict_to_player(d: dict) -> Player:
-    p = Player(d["id"])
-    p.is_alive = d["alive"]
-    p.has_reroll = d["reroll"]
-    if "mission" in d:
-        p.mission = Mission(d["mission"]["target"], d["mission"]["location"], d["mission"]["weapon"])
-    else:
-        p.mission = None
-    return p
 
-
-def player_to_dict(p: Player) -> dict:
-    d = dict()
-    d["id"] = p.id
-    d["alive"] = p.is_alive
-    d["reroll"] = p.has_reroll
-    if p.mission is not None:
-        d["mission"] = dict()
-        d["mission"]["target"] = p.mission.target_id
-        d["mission"]["location"] = p.mission.location
-        d["mission"]["weapon"] = p.mission.weapon
-    return d
-
-
-def get_players_from_data(data: list[dict]) -> list[Player]:
-    return [dict_to_player(d) for d in data]
-
-
-def set_data_from_players(players: list[Player]) -> list[dict]:
-    return [player_to_dict(p) for p in players]
-
-
-# helper functions
 def extract_members_from_args(ctx: Context, *mentions: str) -> list[Member]:
     guild = ctx.guild
     if guild is None:

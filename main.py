@@ -3,7 +3,8 @@ import os
 import discord
 from discord.ext import commands
 
-from cmds import prepare_commands
+import management
+import alivecog, outofgamecog, admincog
 
 bot = commands.Bot(command_prefix='!', intents=discord.Intents.all())
 
@@ -31,12 +32,15 @@ async def h(ctx: commands.Context):
 @bot.event
 async def on_ready():
 
-    await prepare_commands(bot)
+    await management.prepare_commands(bot)
+    await bot.add_cog(alivecog.AliveCog(bot))
+    await bot.add_cog(outofgamecog.OutOfGameCog(bot))
+    await bot.add_cog(admincog.AdminCog(bot))
     print(f"Logged in as {bot.user}")
 
 
 def main():
-    bot.run('MTE3OTE1MzU3Njk0MjExMjg0OQ.GXQlhX.GV_cNl_YZevhkeZEg7hJgtxmjhIaM2jU0ot1vQ')
+    bot.run('MTE4MzgzODY0ODY1NTk0NTg1MA.G6oWej.WJCLjHIfBJzpYlaSZHzkuV3vXG-pMA5rLyuxlk')
 
 
 if __name__ == '__main__':

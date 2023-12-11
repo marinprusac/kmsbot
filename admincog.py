@@ -50,49 +50,14 @@ class AdminCog(commands.Cog):
 		await server.day_report(False)
 
 	@commands.command()
-	async def systemrevive(self, ctx: commands.Context, *mentions: str):
+	async def systemrevive(self, ctx: commands.Context, member: discord.Member):
 		server = management.get_server(ctx.guild.id)
-		if not DataHandler.get('running'):
-			await ctx.send("Command failed. Game isn't running!")
-			return
-		members = extract_members_from_args(ctx, *mentions)
-
-		if members is None:
-			await ctx.send("Command failed. Invalid mention!")
-			return
-
-		for member in members:
-			if server.dead_role not in member.roles:
-				await ctx.send(f"{member.mention} is already alive!")
-				return
-			else:
-				await member.add_roles(server.alive_role)
-				await member.remove_roles(server.dead_role)
-				await ctx.send(f"{member.mention} has been revived!")
-		await server.refresh()
+		await server.revive_player(helper.get_player(member.id, server.data.players))
 
 	@commands.command()
-	async def systemkill(self, ctx: commands.Context, *mentions: str):
+	async def systemkill(self, ctx: commands.Context, member: discord.Member):
 		server = management.get_server(ctx.guild.id)
-		if not DataHandler.get('running'):
-			await ctx.send("Command failed. Game isn't running!")
-			return
-		members = extract_members_from_args(ctx, *mentions)
-
-		if members is None:
-			await ctx.send("Command failed. Invalid mention!")
-			return
-
-		for member in members:
-			if server.alive_role not in member.roles:
-				await ctx.send(f"{member.mention} is already dead!")
-				return
-			else:
-				await member.add_roles(server.dead_role)
-				await member.remove_roles(server.alive_role)
-				await server.notify_of_death(member)
-				await ctx.send(f"{member.mention} has been killed!")
-		await server.refresh()
+		await server.kill_player(helper.get_player(member.id, server.data.players))
 
 	@commands.command()
 	async def systemintroduce(self, ctx: commands.Context, member: discord.Member):

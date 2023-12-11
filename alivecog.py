@@ -19,7 +19,7 @@ class AliveCog(commands.Cog):
 		location = what == 'location' or what == 'all'
 		weapon = what == 'weapon' or what == 'all'
 		await server.reroll_mission(helper.get_player(ctx.author.id, server.data.players),
-		                            reroll_person=person, reroll_location=location, reroll_weapon=weapon)
+		                            person=person, location=location, weapon=weapon)
 
 	@commands.command()
 	async def kill(self, ctx: commands.Context):

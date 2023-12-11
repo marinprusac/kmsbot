@@ -1,0 +1,20 @@
+{
+    "py/object": "datahandler.AllData",
+    "guild_id": 790916704225722398,
+    "game_running": false,
+    "day_number": 0,
+    "players": [],
+    "kill_logs": [],
+    "locations": [
+        "A",
+        "B",
+        "C",
+        "D"
+    ],
+    "weapons": [
+        "jabuka",
+        "banana",
+        "kava",
+        "pecivo"
+    ]
+}

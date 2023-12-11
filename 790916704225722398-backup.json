@@ -1,0 +1,59 @@
+{
+    "py/object": "datahandler.AllData",
+    "guild_id": 790916704225722398,
+    "game_running": true,
+    "day_number": 1,
+    "players": [],
+    "kill_logs": [
+        {
+            "py/object": "datahandler.KillLog",
+            "killer_id": 448585812649443359,
+            "day_number": 1,
+            "mission": {
+                "py/object": "datahandler.Mission",
+                "target_id": 827237939049398323,
+                "location": "C",
+                "weapon": "jabuka"
+            }
+        },
+        {
+            "py/object": "datahandler.KillLog",
+            "killer_id": 448585812649443359,
+            "day_number": 1,
+            "mission": {
+                "py/id": 4
+            }
+        },
+        {
+            "py/object": "datahandler.KillLog",
+            "killer_id": 448585812649443359,
+            "day_number": 1,
+            "mission": {
+                "py/object": "datahandler.Mission",
+                "target_id": 796186615386472476,
+                "location": "A",
+                "weapon": "jabuka"
+            }
+        },
+        {
+            "py/object": "datahandler.KillLog",
+            "killer_id": 448585812649443359,
+            "day_number": 1,
+            "mission": {
+                "py/id": 7
+            }
+        }
+    ],
+    "locations": [
+        "A",
+        "B",
+        "C",
+        "D"
+    ],
+    "weapons": [
+        "jabuka",
+        "banana",
+        "kava",
+        "pecivo"
+    ]
+}
