@@ -1,38 +1,21 @@
 {
     "running": true,
-    "day": 2,
+    "day": 1,
     "daykills": [
         {
             "day": 1,
             "kills": [
                 {
-                    "killer": 460888029784178719,
+                    "killer": 361937252877729794,
+                    "target": 464753609599352832
+                },
+                {
+                    "killer": 361937252877729794,
                     "target": 393884990829494274
                 },
                 {
-                    "killer": 688019069877747809,
-                    "target": 448585812649443359
-                },
-                {
-                    "killer": 688019069877747809,
+                    "killer": 944696236718571581,
                     "target": 1107991865107689492
-                },
-                {
-                    "killer": 688019069877747809,
-                    "target": 361937252877729794
-                }
-            ]
-        },
-        {
-            "day": 2,
-            "kills": [
-                {
-                    "killer": 464753609599352832,
-                    "target": 200555911591231489
-                },
-                {
-                    "killer": 464753609599352832,
-                    "target": 944696236718571581
                 }
             ]
         }
@@ -65,23 +48,23 @@
     ],
     "players": [
         {
-            "id": 460888029784178719,
+            "id": 361937252877729794,
             "alive": true,
             "reroll": true,
             "mission": {
                 "target": 688019069877747809,
-                "location": "b-zgrada-predavaonice",
-                "weapon": "pecivo"
+                "location": "glavni-ulaz",
+                "weapon": "sal"
             }
         },
         {
-            "id": 464753609599352832,
+            "id": 448585812649443359,
             "alive": true,
-            "reroll": true,
+            "reroll": false,
             "mission": {
-                "target": 460888029784178719,
-                "location": "d-zgrada-katovi",
-                "weapon": "remen"
+                "target": 361937252877729794,
+                "location": "aleja-laptopa",
+                "weapon": "dezodorans"
             }
         },
         {
@@ -89,9 +72,39 @@
             "alive": true,
             "reroll": true,
             "mission": {
-                "target": 464753609599352832,
-                "location": "aleja-laptopa",
+                "target": 448585812649443359,
+                "location": "glavni-ulaz",
+                "weapon": "sunacne-naocale"
+            }
+        },
+        {
+            "id": 944696236718571581,
+            "alive": true,
+            "reroll": false,
+            "mission": {
+                "target": 114869551413329924,
+                "location": "sporedni-ulazi-i-kset",
+                "weapon": "dezodorans"
+            }
+        },
+        {
+            "id": 114869551413329924,
+            "alive": true,
+            "reroll": true,
+            "mission": {
+                "target": 361937252877729794,
+                "location": "a-zgrada-prizemlje",
                 "weapon": "boca"
+            }
+        },
+        {
+            "id": 688018492599042062,
+            "alive": true,
+            "reroll": false,
+            "mission": {
+                "target": 944696236718571581,
+                "location": "glavni-ulaz",
+                "weapon": "dezodorans"
             }
         }
     ]
