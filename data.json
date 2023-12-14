@@ -34,7 +34,12 @@
         },
         {
             "day": 4,
-            "kills": []
+            "kills": [
+                {
+                    "killer": 114869551413329924,
+                    "target": 688019069877747809
+                }
+            ]
         }
     ],
     "locations": [
@@ -69,18 +74,18 @@
             "alive": true,
             "reroll": true,
             "mission": {
-                "target": 688019069877747809,
+                "target": 448585812649443359,
                 "location": "a-zgrada-prizemlje",
-                "weapon": "remen"
+                "weapon": "sunacne-naocale"
             }
         },
         {
             "id": 448585812649443359,
             "alive": true,
-            "reroll": true,
+            "reroll": false,
             "mission": {
                 "target": 688018492599042062,
-                "location": "b-zgrada-predavaonice",
+                "location": "menza",
                 "weapon": "pecivo"
             }
         },
@@ -92,16 +97,6 @@
                 "target": 944696236718571581,
                 "location": "glavni-ulaz",
                 "weapon": "dezodorans"
-            }
-        },
-        {
-            "id": 688019069877747809,
-            "alive": true,
-            "reroll": true,
-            "mission": {
-                "target": 448585812649443359,
-                "location": "menza",
-                "weapon": "sunacne-naocale"
             }
         },
         {

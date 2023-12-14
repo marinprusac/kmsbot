@@ -1,6 +1,6 @@
 {
     "running": true,
-    "day": 3,
+    "day": 4,
     "daykills": [
         {
             "day": 1,
@@ -31,6 +31,15 @@
         {
             "day": 3,
             "kills": []
+        },
+        {
+            "day": 4,
+            "kills": [
+                {
+                    "killer": 114869551413329924,
+                    "target": 688019069877747809
+                }
+            ]
         }
     ],
     "locations": [
@@ -65,18 +74,18 @@
             "alive": true,
             "reroll": true,
             "mission": {
-                "target": 688019069877747809,
+                "target": 448585812649443359,
                 "location": "a-zgrada-prizemlje",
-                "weapon": "remen"
+                "weapon": "sunacne-naocale"
             }
         },
         {
             "id": 448585812649443359,
             "alive": true,
-            "reroll": true,
+            "reroll": false,
             "mission": {
                 "target": 688018492599042062,
-                "location": "b-zgrada-predavaonice",
+                "location": "menza",
                 "weapon": "pecivo"
             }
         },
@@ -91,16 +100,6 @@
             }
         },
         {
-            "id": 688019069877747809,
-            "alive": true,
-            "reroll": true,
-            "mission": {
-                "target": 448585812649443359,
-                "location": "menza",
-                "weapon": "sunacne-naocale"
-            }
-        },
-        {
             "id": 944696236718571581,
             "alive": true,
             "reroll": true,
@@ -108,6 +107,16 @@
                 "target": 114869551413329924,
                 "location": "sporedni-ulazi-i-kset",
                 "weapon": "dezodorans"
+            }
+        },
+        {
+            "id": 114869551413329924,
+            "alive": true,
+            "reroll": true,
+            "mission": {
+                "target": 448585812649443359,
+                "location": "a-zgrada-prizemlje",
+                "weapon": "sunacne-naocale"
             }
         }
     ]
