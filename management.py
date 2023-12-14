@@ -29,7 +29,7 @@ class DiscordServer:
 
 		temp = helper.get_role(guild, '@everyone'), helper.get_role(guild, 'registered'), \
 		       helper.get_role(guild, 'dead'), helper.get_role(guild, 'alive'), helper.get_role(guild, 'admin'), \
-		       helper.get_channel(guild, announcement_id), helper.get_channel(guild, admin_channel_id),\
+		       helper.get_channel(guild, announcement_id), helper.get_channel(guild, admin_channel_id), \
 		       helper.get_category(guild, private_category_id)
 
 		if any(role is None for role in temp):
@@ -118,8 +118,6 @@ class DiscordServer:
 			await self.assign_mission(player, mission, True)
 			await self.announcements_channel.send(f"{self.everyone_role}, "
 			                                      f"**{member.display_name}** has been added to the game, watch out!")
-
-
 
 	async def remove_player(self, player: Player, special: bool = True):
 		member = helper.get_member_from_player(self.guild, player)
@@ -235,7 +233,6 @@ class DiscordServer:
 
 	async def mission_accomplished(self, killer: Player):
 		players = self.data.players
-		alive_players = helper.get_alive_players(players)
 
 		if killer.mission is None:
 			await self.send_private_message(killer, "But... you don't have any missions.")
@@ -243,36 +240,43 @@ class DiscordServer:
 
 		target: Player = helper.get_player(killer.mission.target_id, players)
 
+		if not target.is_alive:
+			await self.send_private_message(killer,
+			                                "Something is wrong. Your target is already dead. Here's a new one.")
+			mission = self.get_new_mission(killer)
+			await self.assign_mission(killer, mission, True)
+			return
+
 		await self.send_private_message(killer, f"You successfully killed your target!")
 		await self.kill_player(target, killer)
 
-		if target.mission.target_id != killer.id:
+		alive_players = helper.get_alive_players(players)
+
+		if len(alive_players) < 2:
+			await self.assign_mission(killer, None, True)
+		elif target.mission.target_id != killer.id:
 			await self.assign_mission(killer, target.mission, True)
-		elif len(alive_players) > 1:
+		else:
 			mission = self.get_new_mission(killer)
 			await self.assign_mission(killer, mission, True)
-		else:
-			await self.assign_mission(killer, None, True)
 
 	async def kill_player(self, target: Player, killer: Player | None = None):
 		alive_players = helper.get_alive_players(self.data.players)
 		day_count = self.data.day_number
 
-		if killer is not None and killer.mission is None:
-			await self.admin_channel.send("Command failed. Reason: Killer has no mission!")
-
 		target.is_alive = False
 		target_member = helper.get_member_from_player(self.guild, target)
+		killer_member = helper.get_member_from_player(self.guild, killer)
 
 		await target_member.remove_roles(self.alive_role)
 		await target_member.add_roles(self.dead_role)
 
 		if killer is None:
-			await self.send_private_message(target, f"You've been killed by {self.guild.me}! Spooky.")
+			await self.send_private_message(target, f"You've been killed by {self.guild.me.display_name}! Spooky.")
 		else:
 			self.data.kill_logs.append(KillLog(killer.id, day_count, killer.mission))
 			await self.send_private_message(target,
-			                                f"You've been killed by {self.guild.me}! You'll get your revenge one day.")
+			                                f"You've been killed by {killer_member.display_name}! You'll get your revenge one day.")
 
 		for player in alive_players:
 			if player.is_alive and player is not killer and player is not target:
@@ -295,6 +299,8 @@ class DiscordServer:
 			return
 
 		player.is_alive = True
+		await member.add_roles(self.alive_role)
+		await member.remove_roles(self.dead_role)
 
 		# Remove kill log
 		for log in self.data.kill_logs.copy():
@@ -307,44 +313,39 @@ class DiscordServer:
 		await self.send_private_message(player, "You've been revived!")
 		await self.announcements_channel.send(f"{member.mention} has been revived, watch out!")
 		await self.assign_mission(player, mission, False)
+		await self.admin_channel.send(f"{member.mention} has been revived.")
 		self.data.save()
 
-	def get_new_mission(self, player: Player) -> Mission:
+	def get_new_mission(self, player: Player) -> Mission | None:
 		alive_players = helper.get_alive_players(self.data.players)
 		locations = self.data.locations
 		weapons = self.data.weapons
 
-		restrictions: set[tuple[int, int]] = {(player.id, player.id)}
-		untargeted: set[int] = set()
-		targeted_once: set[int] = set()
+		if len(alive_players) < 2:
+			return None
 
-		for p in alive_players:
-			t_count = 0
-			for p2 in alive_players:
-				if p2.mission and p2.mission.target_id == p.id:
-					t_count += 1
-			if t_count == 0:
-				untargeted.add(p.id)
-			elif t_count == 1:
-				targeted_once.add(p.id)
+		restrictions: set[tuple[int, int]] = {(player.id, player.id)}
+
+		untargeted, targeted_once, targeted_twice, not_targeting = helper.categorize_by_n_of_targets(alive_players)
 
 		if len(alive_players) > 3:
 			for other_player in alive_players:
 				if other_player is not player and other_player.mission.target_id == player.id:
 					restrictions.add((player.id, other_player.id))
 
-		target_id = tools.delegation_algorithm({player.id}, untargeted, targeted_once, restrictions)[0][1]
+		target_id = tools.delegation_algorithm({player.id}, set(player.id for player in untargeted),
+		                                       set(player.id for player in targeted_once), restrictions)[0][1]
 		location = random.choice(locations)
 		weapon = random.choice(weapons)
 
 		return Mission(target_id, location, weapon)
 
 	async def assign_mission(self, player: Player, mission: Mission | None, get_reroll: bool = False):
-
-		channel = helper.get_channel_by_name(self.guild, str(player.id))
+		channel = helper.get_player_channel(self.guild, player)
 
 		if mission is None:
 			await channel.send("**You have no more targets to kill!**")
+			player.mission = None
 			return
 
 		target = helper.get_player(mission.target_id, self.data.players)
@@ -378,11 +379,15 @@ class DiscordServer:
 		locations = self.data.locations
 		weapons = self.data.weapons
 
+		if player.mission is None:
+			await self.send_private_message(player, "You don't have a mission.")
+			return
 		if not player.has_reroll:
 			await self.send_private_message(player, "You don't have any re-rolls left!")
 			return
 		if not person and not location and not weapon:
-			await self.send_private_message(player, "Please specify what you want to reroll (person, location, weapon, all).")
+			await self.send_private_message(player,
+			                                "Please specify what you want to reroll (person, location, weapon, all).")
 			return
 		if person and len(alive_players) <= 2:
 			await self.send_private_message(player, "There aren't enough alive players to re-roll.")
@@ -403,7 +408,8 @@ class DiscordServer:
 			mission.weapon = list(delegation)[0][1]
 
 		if person:
-			not_targeted, targeted_once, targeted_twice = helper.categorize_by_n_of_targets(alive_players)
+			not_targeted, targeted_once, targeted_twice, not_targeting = helper.categorize_by_n_of_targets(
+				alive_players)
 			restrictions: set[tuple[int, int]] = {(player.id, player.id), (player.id, player.mission.target_id)}
 			if len(alive_players) >= 4:
 				for p in alive_players:
@@ -415,7 +421,7 @@ class DiscordServer:
 
 		player.has_reroll = False
 		self.data.save()
-		await self.assign_mission(player, player.mission)
+		await self.assign_mission(player, mission)
 
 	async def send_private_message(self, player: Player, message: str):
 		channel = helper.get_player_channel(self.guild, player)
