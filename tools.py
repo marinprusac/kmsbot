@@ -17,6 +17,8 @@ def delegation_algorithm(pickers: set, options: set, secondary_options: set,
 	# loop while not everyone got their mission
 	while len(pickers) > 0:
 
+		break_out = False
+
 		# look for those who have the least amount of options
 		min_index = -1
 		min_options = set()
@@ -37,17 +39,18 @@ def delegation_algorithm(pickers: set, options: set, secondary_options: set,
 				secondary_options.remove(chosen)
 				pickers.remove(i)
 				return_val.append((i, chosen))
-				continue
+				break_out = True
+				break
 
 			# put the count as min count if the picker has the least number of options
 			if min_index == -1 or len(primary_candidates) < len(min_options):
 				min_options = primary_candidates
 				min_index = i
 
+		if break_out:
+			continue
+
 		# pick one of the options for the candidate with the least options
-		for j in options.copy():
-			if (min_index, j) not in restrictions:
-				min_options.add(j)
 		chosen = random.choice(list(min_options))
 		return_val.append((min_index, chosen))
 		options.remove(chosen)
