@@ -210,9 +210,9 @@ class DiscordServer:
         await killed_member.add_roles(self.dead_role)
         await self.notify_of_death(killed_member, killer_player)
 
-        if killed_player is not None and killed_player.mission.target != killer_player.id:
+        if killed_player.mission.target != killer_player.id:
             killer_player.mission = killed_player.mission
-            killed_player.reroll = True
+            killer_player.reroll = True
         elif len(players) <= 2:
             killer_player.mission = None
 
