@@ -22,22 +22,23 @@ class DiscordServer:
 
 	def __init__(self, guild: Guild):
 		self.guild = guild
-
-		announcement_id = 1183856464398385223
-		admin_channel_id = 1183856436120391680
-		private_category_id = 1183856634699726918
-
-		temp = helper.get_role(guild, '@everyone'), helper.get_role(guild, 'registered'), \
-		       helper.get_role(guild, 'dead'), helper.get_role(guild, 'alive'), helper.get_role(guild, 'admin'), \
-		       helper.get_channel(guild, announcement_id), helper.get_channel(guild, admin_channel_id), \
-		       helper.get_category(guild, private_category_id)
-
-		if any(role is None for role in temp):
-			raise BaseException()
-
-		self.everyone_role, self.registered_role, self.dead_role, self.alive_role, self.admin_role, \
-		self.announcements_channel, self.admin_channel, self.private_category = temp
 		self.data = AllData(guild.id)
+		self.data.setup_complete = self.setup()
+		self.data.save()
+
+	def setup(self) -> bool:
+		try:
+			self.everyone_role = self.guild.default_role
+			self.registered_role = helper.get_role(self.guild, id=self.data.registered_role_id)
+			self.dead_role = helper.get_role(self.guild, id=self.data.dead_role_id)
+			self.alive_role = helper.get_role(self.guild, id=self.data.alive_role_id)
+			self.admin_role = helper.get_role(self.guild, id=self.data.admin_role_id)
+			self.announcements_channel = helper.get_channel(self.guild, self.data.announcements_channel_id)
+			self.admin_channel = helper.get_channel(self.guild, self.data.admin_channel_id)
+			self.private_category = helper.get_category(self.guild, self.data.private_category_id)
+			return True
+		except AttributeError:
+			return False
 
 	async def start_game(self):
 
@@ -477,6 +478,6 @@ def add_server(guild_id: int, server: DiscordServer):
 	servers[guild_id] = server
 
 
-async def prepare_commands(bot: commands.Bot):
+async def load_guilds(bot: commands.Bot):
 	for guild in bot.guilds:
 		add_server(guild.id, DiscordServer(guild))

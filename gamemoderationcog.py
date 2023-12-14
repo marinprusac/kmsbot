@@ -1,38 +1,30 @@
-import discord
 from discord.ext import commands
 import helper
 import management
+import discord
 
 
-class AdminCog(commands.Cog):
+class GameModeration(commands.Cog):
 	def __init__(self, bot):
 		self.bot = bot
 
 	def cog_check(self, ctx: commands.Context) -> bool:
 		guild = ctx.guild
+		if guild is None:
+			return False
+
+		server = management.get_server(guild.id)
+		if not server.data.setup_complete:
+			return False
+
 		member = helper.get_member(guild, id=ctx.author.id)
-		return 'admin' in [role.name for role in member.roles]
+		if server.admin_role not in member.roles:
+			return False
 
-	@commands.command()
-	async def setwpn(self, ctx: commands.Context, *args):
-		server = management.get_server(ctx.guild.id)
-		weapons = [a.strip(',') for a in args]
-		server.data.weapons = weapons
-		server.data.save()
-		await ctx.send("Weapons set and ready.")
+		if not server.data.game_running:
+			return False
 
-	@commands.command()
-	async def setloc(self, ctx: commands.Context, *args):
-		server = management.get_server(ctx.guild.id)
-		locations: list[str] = [a.strip(',') for a in args]
-		server.data.locations = locations
-		server.data.save()
-		await ctx.send("Locations set and ready!")
-
-	@commands.command()
-	async def start(self, ctx: commands.Context):
-		server = management.get_server(ctx.guild.id)
-		await server.start_game()
+		return True
 
 	@commands.command()
 	async def end(self, ctx: commands.Context):
@@ -71,4 +63,4 @@ class AdminCog(commands.Cog):
 
 
 def setup(bot: commands.Bot):
-	bot.add_cog(AdminCog(bot))
+	bot.add_cog(GameModeration(bot))

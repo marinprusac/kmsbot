@@ -1,45 +1,52 @@
-import os
-
 import discord
 from discord.ext import commands
 
+import adminscog
+import aliveplayerscog
+import gameinfocog
 import management
-import alivecog, outofgamecog, admincog
-
-bot = commands.Bot(command_prefix='!', intents=discord.Intents.all())
-
-
-@bot.command()
-async def hello(ctx: commands.Context):
-	await ctx.send(f"Hello there, {ctx.author.name}!")
-
-
-@bot.command()
-async def ping(ctx: commands.Context):
-	await ctx.send(f"Pong! {round(bot.latency * 1000)}ms")
-
-
-@bot.command()
-async def h(ctx: commands.Context):
-	try:
-		with open('./help.txt') as file:
-			text = file.read()
-			await ctx.send(text)
-	except BaseException:
-		await ctx.send("Command failed. Reason: CRITICAL SERVER ERROR!")
-
-
-@bot.event
-async def on_ready():
-
-	await management.prepare_commands(bot)
-	await bot.add_cog(alivecog.AliveCog(bot))
-	await bot.add_cog(outofgamecog.OutOfGameCog(bot))
-	await bot.add_cog(admincog.AdminCog(bot))
-	print(f"Logged in as {bot.user}")
+import outofgamecog
+import systemcog
+import gamemoderationcog
 
 
 def main():
+	bot = commands.Bot(command_prefix='!', intents=discord.Intents.all())
+
+	@bot.event
+	async def on_command_error(ctx: commands.Context, error: commands.CommandError):
+		if isinstance(error, commands.CheckFailure):
+			await ctx.send("You do not have permission to use this command here at this moment.")
+			return
+
+		if isinstance(error, commands.MissingRequiredArgument):
+			await ctx.send("You are missing a required argument.")
+			return
+
+		if isinstance(error, commands.BadArgument):
+			await ctx.send("You have provided a bad argument.")
+			return
+
+		if isinstance(error, commands.CommandNotFound):
+			await ctx.send("Command not found.")
+			return
+
+		if isinstance(error, commands.MissingPermissions):
+			await ctx.send("You are missing permissions to use this command.")
+			return
+
+	@bot.event
+	async def on_ready():
+		await management.load_guilds(bot)
+		await bot.add_cog(systemcog.System(bot))
+		await bot.add_cog(gameinfocog.GameInfo(bot))
+		await bot.add_cog(aliveplayerscog.AlivePlayers(bot))
+		await bot.add_cog(outofgamecog.OutOfGame(bot))
+		await bot.add_cog(gamemoderationcog.GameModeration(bot))
+		await bot.add_cog(adminscog.Admins(bot))
+
+		print(f"Logged in as {bot.user}")
+
 	bot.run('MTE4MzgzODY0ODY1NTk0NTg1MA.G6oWej.WJCLjHIfBJzpYlaSZHzkuV3vXG-pMA5rLyuxlk')
 
 

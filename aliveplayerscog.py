@@ -3,14 +3,31 @@ import helper
 import management
 
 
-class AliveCog(commands.Cog):
+class AlivePlayers(commands.Cog):
 	def __init__(self, bot):
 		self.bot = bot
 
 	def cog_check(self, ctx: commands.Context) -> bool:
 		guild = ctx.guild
+		if guild is None:
+			return False
+
+		server = management.get_server(guild.id)
+		if not server.data.setup_complete:
+			return False
+
+		if not server.data.game_running:
+			return False
+
 		member = helper.get_member(guild, id=ctx.author.id)
-		return 'alive' in [role.name for role in member.roles]
+		if server.alive_role not in member.roles:
+			return False
+
+		player = helper.get_player(ctx.author.id, server.data.players)
+		if ctx.channel.id != helper.get_player_channel(guild, player).id:
+			return False
+
+		return True
 
 	@commands.command()
 	async def reroll(self, ctx: commands.Context, what: str = ''):
@@ -28,4 +45,4 @@ class AliveCog(commands.Cog):
 
 
 def setup(bot: commands.Bot):
-	bot.add_cog(AliveCog(bot))
+	bot.add_cog(AlivePlayers(bot))

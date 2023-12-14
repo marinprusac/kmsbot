@@ -41,6 +41,18 @@ class KillLog:
 
 class AllData:
 	guild_id: int
+
+	setup_complete: bool
+
+	admin_channel_id: int
+	announcements_channel_id: int
+	private_category_id: int
+
+	registered_role_id: int
+	alive_role_id: int
+	dead_role_id: int
+	admin_role_id: int
+
 	game_running: bool
 	day_number: int
 	players: list[Player]
@@ -58,13 +70,26 @@ class AllData:
 			with open(f'./{self.guild_id}.json') as file:
 				data: AllData = jsonpickle.loads(file.read())
 				self.__dict__.update(data.__dict__)
+
 		except BaseException:
+			self.setup_complete = False
+
+			self.admin_channel_id = 0
+			self.announcements_channel_id = 0
+			self.private_category_id = 0
+
+			self.registered_role_id = 0
+			self.alive_role_id = 0
+			self.dead_role_id = 0
+			self.admin_role_id = 0
+
 			self.game_running = False
 			self.day_number = 0
 			self.players = []
 			self.kill_logs = []
 			self.locations = []
 			self.weapons = []
+
 			with open(f'./{self.guild_id}-backup.json', 'w') as backup, open(f'./{self.guild_id}.json', 'w') as file:
 				backup.write(jsonpickle.dumps(self, indent=4))
 				file.write(jsonpickle.dumps(self, indent=4))
