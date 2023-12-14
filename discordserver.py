@@ -80,12 +80,9 @@ class DiscordServer:
 		await self.admin_channel.send("Game started!")
 
 	async def end_game(self):
-		if not self.data.game_running:
-			await self.admin_channel.send("Command failed. Reason: Game isn't running!")
-			return
 
 		for player in self.data.players.copy():
-			await self.remove_player(player, False)
+			await self.remove_player(helper.get_member_from_player(self.guild, player), False)
 
 		self.data.game_running = False
 		self.data.players = []
@@ -95,9 +92,13 @@ class DiscordServer:
 		await self.admin_channel.send("Game ended!")
 
 	async def add_player(self, member: Member, special: bool = True):
-		if not self.data.game_running and special:
-			await self.admin_channel.send("Game isn't running")
+
+		try:
+			helper.get_player(member.id, self.data.players)
+			await self.admin_channel.send("Player is already in game.")
 			return
+		except AttributeError:
+			pass
 
 		# add player to the list
 		player = Player(member.id)
@@ -120,8 +121,12 @@ class DiscordServer:
 			await self.announcements_channel.send(f"{self.everyone_role}, "
 			                                      f"**{member.display_name}** has been added to the game, watch out!")
 
-	async def remove_player(self, player: Player, special: bool = True):
-		member = helper.get_member_from_player(self.guild, player)
+	async def remove_player(self, member: Member, special: bool = True):
+		try:
+			player = helper.get_player(member.id, self.data.players)
+		except AttributeError:
+			await self.admin_channel.send("Player isn't in game.")
+			return
 
 		self.data.players.remove(player)
 
@@ -265,9 +270,12 @@ class DiscordServer:
 		alive_players = helper.get_alive_players(self.data.players)
 		day_count = self.data.day_number
 
+		if not target.is_alive:
+			await self.admin_channel.send("Player is already dead.")
+			return
+
 		target.is_alive = False
 		target_member = helper.get_member_from_player(self.guild, target)
-		killer_member = helper.get_member_from_player(self.guild, killer)
 
 		await target_member.remove_roles(self.alive_role)
 		await target_member.add_roles(self.dead_role)
@@ -275,6 +283,7 @@ class DiscordServer:
 		if killer is None:
 			await self.send_private_message(target, f"You've been killed by {self.guild.me.display_name}! Spooky.")
 		else:
+			killer_member = helper.get_member_from_player(self.guild, killer)
 			self.data.kill_logs.append(KillLog(killer.id, day_count, killer.mission))
 			await self.send_private_message(target,
 			                                f"You've been killed by {killer_member.display_name}! You'll get your revenge one day.")
@@ -287,16 +296,13 @@ class DiscordServer:
 					await self.assign_mission(player, mission)
 
 		self.data.save()
+		await self.admin_channel.send("Player has been killed.")
 
 	async def revive_player(self, player: Player):
 		member = helper.get_member_from_player(self.guild, player)
 
-		if not self.data.game_running:
-			await self.admin_channel.send("Command failed. Reason: Game isn't running!")
-			return
-
 		if player.is_alive:
-			await self.admin_channel.send(f"{member.mention} is already alive!")
+			await self.admin_channel.send(f"Player is already alive!")
 			return
 
 		player.is_alive = True
@@ -476,6 +482,12 @@ def add_server(guild_id: int, server: DiscordServer):
 	if guild_id in servers:
 		raise AttributeError
 	servers[guild_id] = server
+
+
+def remove_server(guild_id: int):
+	if guild_id not in servers:
+		raise AttributeError
+	servers.pop(guild_id)
 
 
 async def load_guilds(bot: commands.Bot):

@@ -67,7 +67,7 @@ class AllData:
 
 	def load(self):
 		try:
-			with open(f'./{self.guild_id}.json') as file:
+			with open(f'./data/{self.guild_id}.json') as file:
 				data: AllData = jsonpickle.loads(file.read())
 				self.__dict__.update(data.__dict__)
 
@@ -90,17 +90,17 @@ class AllData:
 			self.locations = []
 			self.weapons = []
 
-			with open(f'./{self.guild_id}-backup.json', 'w') as backup, open(f'./{self.guild_id}.json', 'w') as file:
+			with open(f'./data/{self.guild_id}-backup.json', 'w') as backup, open(f'./data/{self.guild_id}.json', 'w') as file:
 				backup.write(jsonpickle.dumps(self, indent=4))
 				file.write(jsonpickle.dumps(self, indent=4))
 
 	def save(self):
-		with open(f'./{self.guild_id}-backup.json', 'w') as backup, open(f'./{self.guild_id}.json', 'r') as file:
+		with open(f'./data/{self.guild_id}-backup.json', 'w') as backup, open(f'./data/{self.guild_id}.json', 'r') as file:
 			backup.write(file.read())
 		try:
-			with open(f'./{self.guild_id}.json', 'w') as file:
+			with open(f'./data/{self.guild_id}.json', 'w') as file:
 				file.write(jsonpickle.dumps(self, indent=4))
 		except BaseException as err:
-			with open(f'./{self.guild_id}.json', 'w') as file, open(f'./{self.guild_id}-backup.json', 'r') as backup:
+			with open(f'./data/{self.guild_id}.json', 'w') as file, open(f'./data/{self.guild_id}-backup.json', 'r') as backup:
 				file.write(backup.read())
 			raise err

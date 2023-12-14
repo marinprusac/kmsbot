@@ -1,16 +1,12 @@
 import discord
 from discord.ext import commands
+import sys
 
-import adminscog
-import aliveplayerscog
-import gameinfocog
-import management
-import outofgamecog
-import systemcog
-import gamemoderationcog
+from cogs import gameinfocog, aliveplayerscog, outofgamecog, gamemoderationcog, adminscog, systemcog
+import discordserver
 
 
-def main():
+def main(token):
 	bot = commands.Bot(command_prefix='!', intents=discord.Intents.all())
 
 	@bot.event
@@ -37,18 +33,33 @@ def main():
 
 	@bot.event
 	async def on_ready():
-		await management.load_guilds(bot)
+		await discordserver.load_guilds(bot)
 		await bot.add_cog(systemcog.System(bot))
 		await bot.add_cog(gameinfocog.GameInfo(bot))
 		await bot.add_cog(aliveplayerscog.AlivePlayers(bot))
 		await bot.add_cog(outofgamecog.OutOfGame(bot))
 		await bot.add_cog(gamemoderationcog.GameModeration(bot))
 		await bot.add_cog(adminscog.Admins(bot))
-
 		print(f"Logged in as {bot.user}")
 
-	bot.run('MTE4MzgzODY0ODY1NTk0NTg1MA.G6oWej.WJCLjHIfBJzpYlaSZHzkuV3vXG-pMA5rLyuxlk')
+	@bot.event
+	async def on_member_join(member: discord.Member):
+		pass
+
+	@bot.event
+	async def on_member_remove(member: discord.Member):
+		server = management.get_server(member.guild.id)
+		await server.remove_player(member, True)
+
+	@bot.event
+	async def on_guild_join(guild: discord.Guild):
+		management.add_server(guild.id, management.DiscordServer(guild))
+
+	@bot.event
+	async def on_guild_remove(guild: discord.Guild):
+		management.remove_server(guild.id)
+	bot.run(token)
 
 
 if __name__ == '__main__':
-	main()
+	main(sys.argv[1])

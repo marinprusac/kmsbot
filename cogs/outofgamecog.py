@@ -1,5 +1,5 @@
 from discord.ext import commands
-import management
+import discordserver
 import helper
 
 
@@ -12,7 +12,7 @@ class OutOfGame(commands.Cog):
 		if guild is None:
 			return False
 
-		server = management.get_server(guild.id)
+		server = discordserver.get_server(guild.id)
 		if not server.data.setup_complete:
 			return False
 
@@ -23,7 +23,7 @@ class OutOfGame(commands.Cog):
 
 	@commands.command()
 	async def register(self, ctx: commands.Context):
-		server = management.get_server(ctx.guild.id)
+		server = discordserver.get_server(ctx.guild.id)
 
 		member = helper.get_member(ctx.guild, id=ctx.author.id)
 
@@ -35,7 +35,7 @@ class OutOfGame(commands.Cog):
 
 	@commands.command()
 	async def unregister(self, ctx: commands.Context):
-		server = management.get_server(ctx.guild.id)
+		server = discordserver.get_server(ctx.guild.id)
 
 		if server.data.game_running:
 			await ctx.send("Command failed. Reason: Cannot unregister during a running game!")

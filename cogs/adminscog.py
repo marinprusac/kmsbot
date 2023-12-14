@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 import helper
-import management
+import discordserver
 
 
 class Admins(commands.Cog):
@@ -13,7 +13,7 @@ class Admins(commands.Cog):
 		if guild is None:
 			return False
 
-		server = management.get_server(guild.id)
+		server = discordserver.get_server(guild.id)
 		if not server.data.setup_complete:
 			return False
 
@@ -28,7 +28,7 @@ class Admins(commands.Cog):
 
 	@commands.command()
 	async def setwpn(self, ctx: commands.Context, *args):
-		server = management.get_server(ctx.guild.id)
+		server = discordserver.get_server(ctx.guild.id)
 		weapons = [a.strip(',') for a in args]
 		server.data.weapons = weapons
 		server.data.save()
@@ -36,7 +36,7 @@ class Admins(commands.Cog):
 
 	@commands.command()
 	async def setloc(self, ctx: commands.Context, *args):
-		server = management.get_server(ctx.guild.id)
+		server = discordserver.get_server(ctx.guild.id)
 		locations: list[str] = [a.strip(',') for a in args]
 		server.data.locations = locations
 		server.data.save()
@@ -44,7 +44,7 @@ class Admins(commands.Cog):
 
 	@commands.command()
 	async def start(self, ctx: commands.Context):
-		server = management.get_server(ctx.guild.id)
+		server = discordserver.get_server(ctx.guild.id)
 		await server.start_game()
 
 

@@ -1,6 +1,6 @@
 from discord.ext import commands
 import helper
-import management
+import discordserver
 import discord
 
 
@@ -38,7 +38,7 @@ class System(commands.Cog):
 			await ctx.send("Please provide all 3 arguments: admin_channel_id, announce_channel_id, private_category_id")
 			return
 		await ctx.send("Setting up server...")
-		server = management.get_server(ctx.guild.id)
+		server = discordserver.get_server(ctx.guild.id)
 
 		server.data.admin_channel_id = admin_channel.id
 		server.data.announcements_channel_id = announce_channel.id
