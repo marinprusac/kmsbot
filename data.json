@@ -1,6 +1,6 @@
 {
     "running": true,
-    "day": 1,
+    "day": 4,
     "daykills": [
         {
             "day": 1,
@@ -18,6 +18,23 @@
                     "target": 1107991865107689492
                 }
             ]
+        },
+        {
+            "day": 2,
+            "kills": [
+                {
+                    "killer": 448585812649443359,
+                    "target": 361937252877729794
+                }
+            ]
+        },
+        {
+            "day": 3,
+            "kills": []
+        },
+        {
+            "day": 4,
+            "kills": []
         }
     ],
     "locations": [
@@ -52,35 +69,25 @@
             "alive": true,
             "reroll": true,
             "mission": {
-                "target": 361937252877729794,
-                "location": "a-zgrada-prizemlje",
-                "weapon": "boca"
-            }
-        },
-        {
-            "id": 361937252877729794,
-            "alive": true,
-            "reroll": true,
-            "mission": {
                 "target": 688019069877747809,
-                "location": "glavni-ulaz",
-                "weapon": "sal"
+                "location": "a-zgrada-prizemlje",
+                "weapon": "remen"
             }
         },
         {
             "id": 448585812649443359,
             "alive": true,
-            "reroll": false,
+            "reroll": true,
             "mission": {
-                "target": 361937252877729794,
-                "location": "aleja-laptopa",
-                "weapon": "dezodorans"
+                "target": 688018492599042062,
+                "location": "b-zgrada-predavaonice",
+                "weapon": "pecivo"
             }
         },
         {
             "id": 688018492599042062,
             "alive": true,
-            "reroll": false,
+            "reroll": true,
             "mission": {
                 "target": 944696236718571581,
                 "location": "glavni-ulaz",
@@ -93,14 +100,14 @@
             "reroll": true,
             "mission": {
                 "target": 448585812649443359,
-                "location": "glavni-ulaz",
+                "location": "menza",
                 "weapon": "sunacne-naocale"
             }
         },
         {
             "id": 944696236718571581,
             "alive": true,
-            "reroll": false,
+            "reroll": true,
             "mission": {
                 "target": 114869551413329924,
                 "location": "sporedni-ulazi-i-kset",

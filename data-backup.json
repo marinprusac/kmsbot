@@ -1,6 +1,6 @@
 {
     "running": true,
-    "day": 1,
+    "day": 3,
     "daykills": [
         {
             "day": 1,
@@ -18,6 +18,19 @@
                     "target": 1107991865107689492
                 }
             ]
+        },
+        {
+            "day": 2,
+            "kills": [
+                {
+                    "killer": 448585812649443359,
+                    "target": 361937252877729794
+                }
+            ]
+        },
+        {
+            "day": 3,
+            "kills": []
         }
     ],
     "locations": [
@@ -48,22 +61,32 @@
     ],
     "players": [
         {
-            "id": 361937252877729794,
+            "id": 114869551413329924,
             "alive": true,
             "reroll": true,
             "mission": {
                 "target": 688019069877747809,
-                "location": "glavni-ulaz",
-                "weapon": "sal"
+                "location": "a-zgrada-prizemlje",
+                "weapon": "remen"
             }
         },
         {
             "id": 448585812649443359,
             "alive": true,
-            "reroll": false,
+            "reroll": true,
             "mission": {
-                "target": 361937252877729794,
-                "location": "aleja-laptopa",
+                "target": 688018492599042062,
+                "location": "b-zgrada-predavaonice",
+                "weapon": "pecivo"
+            }
+        },
+        {
+            "id": 688018492599042062,
+            "alive": true,
+            "reroll": true,
+            "mission": {
+                "target": 944696236718571581,
+                "location": "glavni-ulaz",
                 "weapon": "dezodorans"
             }
         },
@@ -73,37 +96,17 @@
             "reroll": true,
             "mission": {
                 "target": 448585812649443359,
-                "location": "glavni-ulaz",
+                "location": "menza",
                 "weapon": "sunacne-naocale"
             }
         },
         {
             "id": 944696236718571581,
             "alive": true,
-            "reroll": false,
+            "reroll": true,
             "mission": {
                 "target": 114869551413329924,
                 "location": "sporedni-ulazi-i-kset",
-                "weapon": "dezodorans"
-            }
-        },
-        {
-            "id": 114869551413329924,
-            "alive": true,
-            "reroll": true,
-            "mission": {
-                "target": 361937252877729794,
-                "location": "a-zgrada-prizemlje",
-                "weapon": "boca"
-            }
-        },
-        {
-            "id": 688018492599042062,
-            "alive": true,
-            "reroll": false,
-            "mission": {
-                "target": 944696236718571581,
-                "location": "glavni-ulaz",
                 "weapon": "dezodorans"
             }
         }
