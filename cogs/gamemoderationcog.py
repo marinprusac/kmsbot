@@ -59,7 +59,7 @@ class GameModeration(commands.Cog):
 	@commands.command()
 	async def systemremove(self, ctx: commands.Context, member: discord.Member):
 		server = management.get_server(ctx.guild.id)
-		await server.remove_player(helper.get_player(member.id, server.data.players))
+		await server.remove_player(member)
 
 
 def setup(bot: commands.Bot):
