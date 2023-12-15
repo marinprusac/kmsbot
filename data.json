@@ -1,6 +1,6 @@
 {
     "running": true,
-    "day": 4,
+    "day": 5,
     "daykills": [
         {
             "day": 1,
@@ -40,6 +40,10 @@
                     "target": 688019069877747809
                 }
             ]
+        },
+        {
+            "day": 5,
+            "kills": []
         }
     ],
     "locations": [
@@ -92,9 +96,9 @@
         {
             "id": 688018492599042062,
             "alive": true,
-            "reroll": true,
+            "reroll": false,
             "mission": {
-                "target": 944696236718571581,
+                "target": 114869551413329924,
                 "location": "glavni-ulaz",
                 "weapon": "dezodorans"
             }
