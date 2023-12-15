@@ -1,0 +1,28 @@
+{
+    "py/object": "datahandler.AllData",
+    "guild_id": 790916704225722398,
+    "game_running": false,
+    "day_number": 0,
+    "players": [],
+    "kill_logs": [],
+    "locations": [
+        "A",
+        "B",
+        "C",
+        "D"
+    ],
+    "weapons": [
+        "jabuka",
+        "banana",
+        "kava",
+        "pecivo"
+    ],
+    "setup_complete": true,
+    "admin_channel_id": 1183856436120391680,
+    "announcements_channel_id": 1183856464398385223,
+    "private_category_id": 1183856634699726918,
+    "admin_role_id": 1183856149305495632,
+    "registered_role_id": 835160528841736213,
+    "alive_role_id": 1183856056531685396,
+    "dead_role_id": 1183856101691772979
+}

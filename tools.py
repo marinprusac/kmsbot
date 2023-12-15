@@ -1,77 +1,60 @@
-import json
 import random
 
 
 def fisher_yates_shuffle(lst: list) -> list:
-    lst2 = lst.copy()
-    for i in range(len(lst2) - 1, 0, -1):
-        j = random.randint(0, i - 1)
-        lst2[i], lst2[j] = lst2[j], lst2[i]
-    return lst2
-
-
-class Mission:
-    target: int
-    location: str
-    weapon: str
-
-    def __init__(self, target: int, location: str, weapon: str):
-        self.target = target
-        self.location = location
-        self.weapon = weapon
-
-
-class Player:
-    id: int
-    alive: bool = True
-    reroll: bool = True
-    mission: Mission | None
-
-    def __init__(self, id: int, mission: Mission | None = None):
-        self.id = id
-        self.mission = mission
+	lst2 = lst.copy()
+	for i in range(len(lst2) - 1, 0, -1):
+		j = random.randint(0, i - 1)
+		lst2[i], lst2[j] = lst2[j], lst2[i]
+	return lst2
 
 
 def delegation_algorithm(pickers: set, options: set, secondary_options: set,
-                         restrictions: set[tuple]) -> set[tuple]:
-    not_targeting: set[int] = set(pickers)
-    not_targeted: set[int] = set(options)
-    targeted_once: set[int] = set(secondary_options)
+                         restrictions: set[tuple]) -> list[tuple]:
 
-    return_val: set[tuple[int, int]] = set()
+	return_val: list[tuple[int, int]] = []
 
-    while len(not_targeting) > 0:
-        min_index = -1
-        min_count = -1
-        break_out = False
+	# loop while not everyone got their mission
+	while len(pickers) > 0:
 
-        for i in not_targeting.copy():
-            count = 0
-            for j in not_targeted:
-                if (i, j) not in restrictions:
-                    count += 1
-            if count == 0:
-                for j in targeted_once:
-                    if (i, j) not in restrictions:
-                        targeted_once.remove(j)
-                        not_targeting.remove(i)
-                        return_val.add((i, j))
-                        break_out = True
-                        break
-                break
-            if min_count == -1 or count < min_count:
-                min_count = count
-                min_index = i
+		break_out = False
 
-        if break_out:
-            continue
+		# look for those who have the least amount of options
+		min_index = -1
+		min_options = set()
 
-        for j in not_targeted.copy():
-            if (min_index, j) not in restrictions:
-                return_val.add((min_index, j))
-                not_targeted.remove(j)
-                targeted_once.add(j)
-                not_targeting.remove(min_index)
-                break
+		for i in pickers.copy():
+			primary_candidates = set()
+			for j in options:
+				if (i, j) not in restrictions:
+					primary_candidates.add(j)
 
-    return return_val
+			# if a picker has no primary options, then they have to choose a secondary option
+			if len(primary_candidates) == 0:
+				secondary_candidates = set()
+				for j in secondary_options:
+					if (i, j) not in restrictions:
+						secondary_candidates.add(j)
+				chosen = random.choice(list(secondary_candidates))
+				secondary_options.remove(chosen)
+				pickers.remove(i)
+				return_val.append((i, chosen))
+				break_out = True
+				break
+
+			# put the count as min count if the picker has the least number of options
+			if min_index == -1 or len(primary_candidates) < len(min_options):
+				min_options = primary_candidates
+				min_index = i
+
+		if break_out:
+			continue
+
+		# pick one of the options for the candidate with the least options
+		chosen = random.choice(list(min_options))
+		return_val.append((min_index, chosen))
+		options.remove(chosen)
+		secondary_options.add(chosen)
+		pickers.remove(min_index)
+
+	return return_val
