@@ -1,8 +1,8 @@
 {
     "py/object": "datahandler.AllData",
     "guild_id": 790916704225722398,
-    "game_running": false,
-    "day_number": 0,
+    "game_running": true,
+    "day_number": 1,
     "players": [],
     "kill_logs": [],
     "locations": [

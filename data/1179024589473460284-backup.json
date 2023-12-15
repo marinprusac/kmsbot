@@ -1,0 +1,18 @@
+{
+    "py/object": "datahandler.AllData",
+    "guild_id": 1179024589473460284,
+    "setup_complete": false,
+    "admin_channel_id": 0,
+    "announcements_channel_id": 0,
+    "private_category_id": 0,
+    "registered_role_id": 0,
+    "alive_role_id": 0,
+    "dead_role_id": 0,
+    "admin_role_id": 0,
+    "game_running": false,
+    "day_number": 0,
+    "players": [],
+    "kill_logs": [],
+    "locations": [],
+    "weapons": []
+}
