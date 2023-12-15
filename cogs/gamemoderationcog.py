@@ -1,6 +1,6 @@
 from discord.ext import commands
 import helper
-import discordserver
+import gamemanager
 import discord
 
 
@@ -13,7 +13,7 @@ class GameModeration(commands.Cog):
 		if guild is None:
 			return False
 
-		server = discordserver.get_server(guild.id)
+		server = gamemanager.get_server(guild.id)
 		if not server.data.setup_complete:
 			return False
 
@@ -28,37 +28,37 @@ class GameModeration(commands.Cog):
 
 	@commands.command()
 	async def end(self, ctx: commands.Context):
-		server = discordserver.get_server(ctx.guild.id)
+		server = gamemanager.get_server(ctx.guild.id)
 		await server.end_game()
 
 	@commands.command()
 	async def final(self, ctx: commands.Context):
-		server = discordserver.get_server(ctx.guild.id)
-		await server.day_report(True)
+		server = gamemanager.get_server(ctx.guild.id)
+		await server.end_day(True)
 
 	@commands.command()
 	async def nextday(self, ctx: commands.Context):
-		server = discordserver.get_server(ctx.guild.id)
-		await server.day_report(False)
+		server = gamemanager.get_server(ctx.guild.id)
+		await server.end_day(False)
 
 	@commands.command()
 	async def systemrevive(self, ctx: commands.Context, member: discord.Member):
-		server = discordserver.get_server(ctx.guild.id)
+		server = gamemanager.get_server(ctx.guild.id)
 		await server.revive_player(helper.get_player(member.id, server.data.players))
 
 	@commands.command()
 	async def systemkill(self, ctx: commands.Context, member: discord.Member):
-		server = discordserver.get_server(ctx.guild.id)
+		server = gamemanager.get_server(ctx.guild.id)
 		await server.kill_player(helper.get_player(member.id, server.data.players))
 
 	@commands.command()
 	async def systemintroduce(self, ctx: commands.Context, member: discord.Member):
-		server = discordserver.get_server(ctx.guild.id)
-		await server.add_player(member)
+		server = gamemanager.get_server(ctx.guild.id)
+		await server.player_joined(member)
 
 	@commands.command()
 	async def systemremove(self, ctx: commands.Context, member: discord.Member):
-		server = discordserver.get_server(ctx.guild.id)
+		server = gamemanager.get_server(ctx.guild.id)
 		await server.remove_player(member)
 
 

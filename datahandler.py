@@ -14,6 +14,7 @@ class Mission:
 
 class Player:
 	id: int
+	in_game: bool
 	is_alive: bool
 	has_reroll: bool
 	mission: Mission | None
@@ -60,6 +61,14 @@ class AllData:
 	locations: list[str]
 	weapons: list[str]
 
+	@property
+	def data_path(self) -> str:
+		return f'./data/{self.guild_id}.json'
+
+	@property
+	def backup_path(self) -> str:
+		return f'./data/{self.guild_id}-backup.json'
+
 	def __init__(self, guild_id: int):
 		self.guild_id = guild_id
 		self.load()
@@ -67,7 +76,7 @@ class AllData:
 
 	def load(self):
 		try:
-			with open(f'./data/{self.guild_id}.json') as file:
+			with open(self.data_path) as file:
 				data: AllData = jsonpickle.loads(file.read())
 				self.__dict__.update(data.__dict__)
 
@@ -90,17 +99,17 @@ class AllData:
 			self.locations = []
 			self.weapons = []
 
-			with open(f'./data/{self.guild_id}-backup.json', 'w') as backup, open(f'./data/{self.guild_id}.json', 'w') as file:
+			with open(self.backup_path, 'w') as backup, open(self.data_path, 'w') as file:
 				backup.write(jsonpickle.dumps(self, indent=4))
 				file.write(jsonpickle.dumps(self, indent=4))
 
 	def save(self):
-		with open(f'./data/{self.guild_id}-backup.json', 'w') as backup, open(f'./data/{self.guild_id}.json', 'r') as file:
+		with open(self.backup_path, 'w') as backup, open(self.data_path, 'r') as file:
 			backup.write(file.read())
 		try:
-			with open(f'./data/{self.guild_id}.json', 'w') as file:
+			with open(self.data_path, 'w') as file:
 				file.write(jsonpickle.dumps(self, indent=4))
 		except BaseException as err:
-			with open(f'./data/{self.guild_id}.json', 'w') as file, open(f'./data/{self.guild_id}-backup.json', 'r') as backup:
+			with open(self.data_path, 'w') as file, open(self.backup_path, 'r') as backup:
 				file.write(backup.read())
 			raise err

@@ -3,7 +3,7 @@ from discord.ext import commands
 import sys
 
 from cogs import gameinfocog, aliveplayerscog, outofgamecog, gamemoderationcog, adminscog, systemcog
-import discordserver
+import gamemanager
 
 
 def main(token):
@@ -33,7 +33,7 @@ def main(token):
 
 	@bot.event
 	async def on_ready():
-		await discordserver.load_guilds(bot)
+		await gamemanager.load_guilds(bot)
 		await bot.add_cog(systemcog.System(bot))
 		await bot.add_cog(gameinfocog.GameInfo(bot))
 		await bot.add_cog(aliveplayerscog.AlivePlayers(bot))
@@ -48,16 +48,16 @@ def main(token):
 
 	@bot.event
 	async def on_member_remove(member: discord.Member):
-		server = discordserver.get_server(member.guild.id)
+		server = gamemanager.get_server(member.guild.id)
 		await server.remove_player(member, True)
 
 	@bot.event
 	async def on_guild_join(guild: discord.Guild):
-		discordserver.add_server(guild.id, discordserver.DiscordServer(guild))
+		gamemanager.add_server(guild.id, gamemanager.GameManager(guild))
 
 	@bot.event
 	async def on_guild_remove(guild: discord.Guild):
-		discordserver.remove_server(guild.id)
+		gamemanager.remove_server(guild.id)
 	bot.run(token)
 
 

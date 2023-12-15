@@ -6,7 +6,7 @@ from datahandler import AllData, Player, Mission, KillLog
 import helper
 
 
-class DiscordServer:
+class GuildManager:
 	admin_role: Role
 	alive_role: Role
 	dead_role: Role
@@ -18,24 +18,21 @@ class DiscordServer:
 	private_category: CategoryChannel
 
 	guild: Guild
-	data: AllData
 
 	def __init__(self, guild: Guild):
 		self.guild = guild
-		self.data = AllData(guild.id)
-		self.data.setup_complete = self.setup()
-		self.data.save()
 
-	def setup(self) -> bool:
+	def setup(self, registered_role_id, dead_role_id, alive_role_id, admin_role_id,
+	          announcements_channel_id, admin_channel_id, private_category_id) -> bool:
 		try:
 			self.everyone_role = self.guild.default_role
-			self.registered_role = helper.get_role(self.guild, id=self.data.registered_role_id)
-			self.dead_role = helper.get_role(self.guild, id=self.data.dead_role_id)
-			self.alive_role = helper.get_role(self.guild, id=self.data.alive_role_id)
-			self.admin_role = helper.get_role(self.guild, id=self.data.admin_role_id)
-			self.announcements_channel = helper.get_channel(self.guild, self.data.announcements_channel_id)
-			self.admin_channel = helper.get_channel(self.guild, self.data.admin_channel_id)
-			self.private_category = helper.get_category(self.guild, self.data.private_category_id)
+			self.registered_role = helper.get_role(self.guild, id=registered_role_id)
+			self.dead_role = helper.get_role(self.guild, id=dead_role_id)
+			self.alive_role = helper.get_role(self.guild, id=alive_role_id)
+			self.admin_role = helper.get_role(self.guild, id=admin_role_id)
+			self.announcements_channel = helper.get_channel(self.guild, announcements_channel_id)
+			self.admin_channel = helper.get_channel(self.guild, admin_channel_id)
+			self.private_category = helper.get_category(self.guild, private_category_id)
 			return True
 		except AttributeError:
 			return False
@@ -43,9 +40,6 @@ class DiscordServer:
 	async def start_game(self):
 
 		# check if the conditions are met
-		if self.data.game_running:
-			await self.admin_channel.send("Command failed. Game is already running!")
-			return
 		if len(self.registered_role.members) <= 1:
 			await self.admin_channel.send("There aren't enough players! :(")
 			return

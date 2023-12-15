@@ -4,7 +4,11 @@ from datahandler import Player, Mission, KillLog
 
 
 def get_alive_players(players: list[Player]) -> list[Player]:
-	return [p for p in players if p.is_alive]
+	return [p for p in players if p.is_alive and p.in_game]
+
+
+def get_playing_players(players: list[Player]) -> list[Player]:
+	return [p for p in players if p.in_game]
 
 
 def get_player_channel(guild: Guild, player: Player) -> TextChannel:

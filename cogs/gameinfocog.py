@@ -1,6 +1,6 @@
 
 from discord.ext import commands
-import discordserver
+import gamemanager
 import helper
 
 
@@ -13,7 +13,7 @@ class GameInfo(commands.Cog):
 		if guild is None:
 			return False
 
-		server = discordserver.get_server(guild.id)
+		server = gamemanager.get_server(guild.id)
 		if not server.data.setup_complete:
 			return False
 
@@ -21,14 +21,14 @@ class GameInfo(commands.Cog):
 
 	@commands.command()
 	async def getwpn(self, ctx: commands.Context):
-		server = discordserver.get_server(ctx.guild.id)
+		server = gamemanager.get_server(ctx.guild.id)
 		weapons = server.data.weapons
 		str_print = '\n'.join(weapons)
 		await ctx.send(f"Weapons list:\n{str_print}")
 
 	@commands.command()
 	async def getloc(self, ctx: commands.Context):
-		server = discordserver.get_server(ctx.guild.id)
+		server = gamemanager.get_server(ctx.guild.id)
 		locations = server.data.locations
 		str_print = '\n'.join(locations)
 		await ctx.send(f"Locations list:\n{str_print}")

@@ -1,6 +1,6 @@
 from discord.ext import commands
 import helper
-import discordserver
+import gamemanager
 
 
 class AlivePlayers(commands.Cog):
@@ -12,7 +12,7 @@ class AlivePlayers(commands.Cog):
 		if guild is None:
 			return False
 
-		server = discordserver.get_server(guild.id)
+		server = gamemanager.get_server(guild.id)
 		if not server.data.setup_complete:
 			return False
 
@@ -31,7 +31,7 @@ class AlivePlayers(commands.Cog):
 
 	@commands.command()
 	async def reroll(self, ctx: commands.Context, what: str = ''):
-		server = discordserver.get_server(ctx.guild.id)
+		server = gamemanager.get_server(ctx.guild.id)
 		person = what == 'person' or what == 'all'
 		location = what == 'location' or what == 'all'
 		weapon = what == 'weapon' or what == 'all'
@@ -40,7 +40,7 @@ class AlivePlayers(commands.Cog):
 
 	@commands.command()
 	async def kill(self, ctx: commands.Context):
-		server = discordserver.get_server(ctx.guild.id)
+		server = gamemanager.get_server(ctx.guild.id)
 		await server.mission_accomplished(helper.get_player(ctx.author.id, server.data.players))
 
 
