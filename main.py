@@ -48,16 +48,16 @@ def main(token):
 
 	@bot.event
 	async def on_member_remove(member: discord.Member):
-		server = management.get_server(member.guild.id)
+		server = discordserver.get_server(member.guild.id)
 		await server.remove_player(member, True)
 
 	@bot.event
 	async def on_guild_join(guild: discord.Guild):
-		management.add_server(guild.id, management.DiscordServer(guild))
+		discordserver.add_server(guild.id, discordserver.DiscordServer(guild))
 
 	@bot.event
 	async def on_guild_remove(guild: discord.Guild):
-		management.remove_server(guild.id)
+		discordserver.remove_server(guild.id)
 	bot.run(token)
 
 
