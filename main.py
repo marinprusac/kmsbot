@@ -1,4 +1,5 @@
 import os
+import sys
 
 import discord
 from discord.ext import commands
@@ -36,7 +37,7 @@ async def on_ready():
 
 
 def main():
-    bot.run('MTE3OTE1MzU3Njk0MjExMjg0OQ.GXQlhX.GV_cNl_YZevhkeZEg7hJgtxmjhIaM2jU0ot1vQ')
+    bot.run(sys.argv[1])
 
 
 if __name__ == '__main__':
